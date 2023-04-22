@@ -1,5 +1,6 @@
 #include "ServerApp.h"
 
+void log(TCHAR* logString);
 int _tmain(int argc, TCHAR* argv[]) {
 
 #ifdef UNICODE
@@ -8,8 +9,15 @@ int _tmain(int argc, TCHAR* argv[]) {
 	_setmode(_fileno(stderr), _O_WTEXT);
 #endif 
 
-	_tprintf(_T("%s\n"), MSG_SERVERAPP_WELCOME);
-	_tprintf(_T("%s\n"), MSG_SERVERAPP_CLOSE_SUCCESS);
+	log(MSG_SERVERAPP_WELCOME);
+	log(MSG_SERVERAPP_CLOSE_SUCCESS);
 
 	exit(SUCCESS);
+}
+/// <summary>
+/// Prints log strings
+/// </summary>
+/// <param name="logString"></param>
+void log(TCHAR* logString) {
+	_tprintf(_T("%s\n"), logString);
 }
