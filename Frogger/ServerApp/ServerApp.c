@@ -8,8 +8,8 @@ int _tmain(int argc, TCHAR* argv[]) {
 	_setmode(_fileno(stderr), _O_WTEXT);
 #endif 
 
-	_tprintf(_T("%s\n"), MSG_SUCCESS_SERVERAPP_OPEN);
-	_tprintf(_T("%s\n"), MSG_SUCCESS_SERVERAPP_CLOSE);
+	_tprintf(_T("%s\n"), MSG_SERVERAPP_WELCOME);
+	_tprintf(_T("%s\n"), MSG_SERVERAPP_CLOSE_SUCCESS);
 
 	exit(SUCCESS);
 }
