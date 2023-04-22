@@ -1,8 +1,12 @@
 #include "ServerApp.h"
 
+typedef struct {
+	HANDLE hMutex;
+} MutexForSingleInstanceRunning;
+
 void log(TCHAR* logString);
-void check_single_instance(HANDLE hMutex);
-int close_serverapp(int errorCode);
+void check_single_instance(MutexForSingleInstanceRunning* mutex);
+int close_serverapp(int errorCode, MutexForSingleInstanceRunning* mutex);
 
 int _tmain(int argc, TCHAR* argv[]) {
 
@@ -16,11 +20,11 @@ int _tmain(int argc, TCHAR* argv[]) {
 	log(MSG_SERVERAPP_WELCOME);
 	
 	//CHECK SINGLE INSTANCE RUNNING
-	HANDLE hMutex = NULL;
-	check_single_instance(hMutex);
+	MutexForSingleInstanceRunning mutex;
+	check_single_instance(&mutex);
 
 	//CLOSE SERVER
-	close_serverapp(SUCCESS, hMutex);
+	close_serverapp(SUCCESS, &mutex);
 }
 
 /// <summary>
@@ -35,13 +39,13 @@ void log(TCHAR* logString) {
 /// Checks if there's only one ServerApp instance running currently
 /// </summary>
 /// <param name="hMutex"></param>
-void check_single_instance(HANDLE hMutex) {
-	hMutex = CreateMutex(NULL, TRUE, FROGGER_SERVERAPP_ONLINE);
+void check_single_instance(MutexForSingleInstanceRunning* mutex) {
+	mutex->hMutex = CreateMutex(NULL, TRUE, FROGGER_SERVERAPP_ONLINE);
 	if (GetLastError() == ERROR_ALREADY_EXISTS)
 	{
-		CloseHandle(hMutex);
+		CloseHandle(mutex->hMutex);
 		log(MSG_SERVERAPP_MULTIPLE_INSTANCES_RUNNING);
-		close_serverapp(ERROR_MULTIPLE_INSTANCES_RUNNING, hMutex);
+		close_serverapp(ERROR_MULTIPLE_INSTANCES_RUNNING, mutex->hMutex);
 	}
 	else {
 		log(MSG_SERVERAPP_SINGLE_INSTANCE_RUNNING);
@@ -54,7 +58,7 @@ void check_single_instance(HANDLE hMutex) {
 /// <param name="errorCode"></param>
 /// <param name="hMutex"></param>
 /// <returns></returns>
-int close_serverapp(int errorCode, HANDLE hMutex) {
+int close_serverapp(int errorCode, MutexForSingleInstanceRunning* mutex) {
 	switch (errorCode) {
 	case SUCCESS:
 		break;
@@ -64,7 +68,7 @@ int close_serverapp(int errorCode, HANDLE hMutex) {
 		break;
 	}
 	log(MSG_SERVERAPP_CLOSE_SUCCESS);
-	ReleaseMutex(hMutex);
-	CloseHandle(hMutex);
+	ReleaseMutex(mutex->hMutex);
+	CloseHandle(mutex->hMutex);
 	exit(errorCode);
 }
