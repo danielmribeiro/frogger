@@ -40,7 +40,7 @@ int _tmain(int argc, TCHAR *argv[]) {
 #endif 
 
 	//WELCOME
-	log(MSG_SERVERAPP_FROGGER);
+	log(MSG_SERVERAPP_TITLE_FROGGER);
 	
 	ServerData data;
 	fill_default_serverdata(&data);
@@ -50,6 +50,9 @@ int _tmain(int argc, TCHAR *argv[]) {
 
 	//INITIALIZE VARIABLES
 	initialize_variables(argc, argv, &data);
+
+	//LIST SPEED AND NUMBER OF LANES
+	_tprintf(_T("\n\nSpeed - %d\nNumber Of Lanes - %d\n\n"), data.initialSpeed, data.initialNumberOfLanes);
 
 	//CLOSE SERVER
 	close_serverapp(SUCCESS, &data);
@@ -87,15 +90,15 @@ void fill_default_serverdata(ServerData* data) {
 /// </summary>
 /// <param name="hMutex"></param>
 void check_single_instance(ServerData* data) {
+	log(MSG_SERVERAPP_TITLE_CHECK_SINGLE_INSTANCE);
 	data->hMutex = CreateMutex(NULL, TRUE, FROGGER_SERVERAPP_ONLINE);
 	if (GetLastError() == ERROR_ALREADY_EXISTS)
 	{
 		CloseHandle(data->hMutex);
-		log(MSG_SERVERAPP_MULTIPLE_INSTANCES_RUNNING);
 		close_serverapp(ERROR_MULTIPLE_INSTANCES_RUNNING, data);
 	}
 	else {
-		log(MSG_SERVERAPP_SINGLE_INSTANCE_RUNNING);
+		log(MSG_SERVERAPP_INFO_SINGLE_INSTANCE_RUNNING);
 	}
 }
 
@@ -137,7 +140,6 @@ void check_valid_arguments_keys(int argc, TCHAR* argv[], ServerData* data) {
 			data->isInitialSpeedFromArgs = FALSE;
 		}
 		else {
-			log(MSG_SERVERAPP_UNKNOWN_ARGUMENT);
 			close_serverapp(ERROR_UNKNOWN_ARGUMENT, data);
 		}
 		break;
@@ -155,12 +157,10 @@ void check_valid_arguments_keys(int argc, TCHAR* argv[], ServerData* data) {
 			data->initialSpeedFromArgsValuePosition = 4;
 		}
 		else {
-			log(MSG_SERVERAPP_UNKNOWN_ARGUMENT);
 			close_serverapp(ERROR_UNKNOWN_ARGUMENT, data);
 		}
 		break;
 	default:
-		log(MSG_SERVERAPP_INVALID_ARGUMENTS_QUANTITY);
 		close_serverapp(ERROR_INVALID_ARGUMENTS_QUANTITY, data);
 		break;
 	}
@@ -181,7 +181,6 @@ void check_valid_arguments_values(TCHAR* argv[], ServerData* data) {
 			data->isInitialNumberOfLanesValueFromArgsValid = TRUE;
 		}
 		else {
-			log(MSG_SERVERAPP_INVALID_NUMBER_OF_LANES);
 			close_serverapp(ERROR_INVALID_NUMBER_OF_LANES,data);
 		}
 	}
@@ -193,7 +192,6 @@ void check_valid_arguments_values(TCHAR* argv[], ServerData* data) {
 			data->isInitialSpeedValueFromArgsValid = TRUE;
 		}
 		else {
-			log(MSG_SERVERAPP_INVALID_SPEED);
 			close_serverapp(ERROR_INVALID_SPEED, data);
 		}
 	}
@@ -205,16 +203,20 @@ void check_valid_arguments_values(TCHAR* argv[], ServerData* data) {
 /// <param name="argv"></param>
 /// <param name="data"></param>
 void set_initial_speed(TCHAR* argv[], ServerData* data) {
+	log(MSG_SERVERAPP_TITLE_SPEED);
 
 	//SET INITIAL SPEED
 	if (data->isInitialSpeedFromArgs == TRUE && data->isInitialSpeedValueFromArgsValid == TRUE) {
+		log(MSG_SERVERAPP_TITLE_SET_SPEED_FROM_ARGUMENTS);
 		set_initial_speed_from_args(argv, data);
 	}
 	else {
+		log(MSG_SERVERAPP_TITLE_SET_SPEED_FROM_REGISTRY);
 		set_initial_speed_from_registry(data);
 	}
 
 	//SAVE INITIAL SPEED
+	log(MSG_SERVERAPP_TITLE_SAVE_SPEED);
 	save_initial_speed_to_registry(data);
 }
 
@@ -225,6 +227,7 @@ void set_initial_speed(TCHAR* argv[], ServerData* data) {
 /// <param name="data"></param>
 void set_initial_speed_from_args(TCHAR* argv[], ServerData* data) {
 	data->initialSpeed = _ttoi(argv[data->initialSpeedFromArgsValuePosition]);
+	log(MSG_SERVERAPP_INFO_SPEED_SET);
 }
 
 /// <summary>
@@ -242,25 +245,29 @@ void set_initial_speed_from_registry(ServerData* data) {
 
 	//GET VALUE FROM REGISTRY
 	if (RegOpenKeyEx(HKEY_CURRENT_USER, keyPath, 0, KEY_ALL_ACCESS, &hkey) == ERROR_SUCCESS) {
-		log(MSG_SERVERAPP_SPEED_KEY_OPENED);
+		log(MSG_SERVERAPP_INFO_SPEED_KEY_OPENED);
 		if (RegQueryValueEx(hkey, speed_value, NULL, NULL, (LPBYTE)&speed_data, &defaultSize) == ERROR_SUCCESS) {
-			log(MSG_SERVERAPP_SPEED_KEY_FOUND);
-			RegCloseKey(hkey);
+			log(MSG_SERVERAPP_INFO_SPEED_KEY_READ);
 		}
 		else {
-			log(MSG_SERVERAPP_INVALID_KEY_SPEED);
 			RegCloseKey(hkey);
+			log(MSG_SERVERAPP_INFO_SPEED_KEY_CLOSED);
 			close_serverapp(ERROR_INVALID_KEY_SPEED, data);
 		}
 	}
 	else {
-		log(MSG_SERVERAPP_CANT_OPEN_KEY);
 		RegCloseKey(hkey);
+		log(MSG_SERVERAPP_INFO_SPEED_KEY_CLOSED);
 		close_serverapp(ERROR_CANT_OPEN_KEY,data);
 	}
 
 	//GIVE VALUE TO VARIABLE IN SERVERDATA STRUCT
 	data->initialSpeed = speed_data;
+	log(MSG_SERVERAPP_INFO_SPEED_SET);
+
+	RegCloseKey(hkey);
+	log(MSG_SERVERAPP_INFO_SPEED_KEY_CLOSED);
+	
 }
 
 /// <summary>
@@ -277,30 +284,31 @@ void save_initial_speed_to_registry(ServerData* data) {
 	DWORD speed_data = data->initialSpeed;
 
 	if (RegOpenKeyEx(HKEY_CURRENT_USER, keyPath, 0, KEY_ALL_ACCESS, &hkey) == ERROR_SUCCESS) {
-		log(MSG_SERVERAPP_SPEED_KEY_OPENED);
+		log(MSG_SERVERAPP_INFO_SPEED_KEY_OPENED);
 	}
 	else {
-		log(MSG_SERVERAPP_CANT_OPEN_KEY);
+		log(MSG_SERVERAPP_ERROR_CANT_OPEN_KEY);
 		if (RegCreateKeyEx(HKEY_CURRENT_USER, keyPath, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &hkey, &res) == ERROR_SUCCESS) {
-			log(MSG_SERVERAPP_SPEED_KEY_CREATED);
+			log(MSG_SERVERAPP_INFO_SPEED_KEY_CREATED);
 		}
 		else {
-			log(MSG_SERVERAPP_CANT_CREATE_KEY);
 			RegCloseKey(hkey);
+			log(MSG_SERVERAPP_INFO_SPEED_KEY_CLOSED);
 			close_serverapp(ERROR_CANT_CREATE_KEY, data);
 		}
 	}
 
 	if (RegSetValueEx(hkey, speed_value, 0, REG_DWORD, (LPBYTE)&speed_data, sizeof(speed_data)) == ERROR_SUCCESS) {
-		log(MSG_SERVERAPP_SPEED_KEY_SET);
+		log(MSG_SERVERAPP_INFO_SPEED_KEY_SET);
 	}
 	else {
-		log(MSG_SERVERAPP_CANT_SET_KEY);
 		RegCloseKey(hkey);
+		log(MSG_SERVERAPP_INFO_SPEED_KEY_CLOSED);
 		close_serverapp(ERROR_CANT_SET_KEY, data);
 	}
 
 	RegCloseKey(hkey);
+	log(MSG_SERVERAPP_INFO_SPEED_KEY_CLOSED);
 }
 
 /// <summary>
@@ -309,15 +317,20 @@ void save_initial_speed_to_registry(ServerData* data) {
 /// <param name="argv"></param>
 /// <param name="data"></param>
 void set_initial_number_of_lanes(TCHAR* argv[], ServerData* data) {
+	log(MSG_SERVERAPP_TITLE_NUMBER_OF_LANES);
+
 	//SET INITIAL NUMBER OF LANES
 	if (data->isInitialNumberOfLanesFromArgs == TRUE && data->isInitialNumberOfLanesValueFromArgsValid == TRUE) {
+		log(MSG_SERVERAPP_TITLE_SET_NUMBER_OF_LANES_FROM_ARGUMENTS);
 		set_initial_number_of_lanes_from_args(argv, data);
 	}
 	else {
+		log(MSG_SERVERAPP_TITLE_SET_NUMBER_OF_LANES_FROM_REGISTRY);
 		set_initial_number_of_lanes_from_registry(data);
 	}
 
 	//SAVE INITIAL NUMBER OF LANES
+	log(MSG_SERVERAPP_TITLE_SAVE_NUMBER_OF_LANES);
 	save_initial_number_of_lanes_to_registry(data);
 }
 
@@ -328,6 +341,7 @@ void set_initial_number_of_lanes(TCHAR* argv[], ServerData* data) {
 /// <param name="data"></param>
 void set_initial_number_of_lanes_from_args(TCHAR* argv[], ServerData* data) {
 	data->initialNumberOfLanes = _ttoi(argv[data->initialNumberOfLanesFromArgsValuePosition]);
+	log(MSG_SERVERAPP_INFO_NUMBER_OF_LANES_SET);
 }
 
 /// <summary>
@@ -345,25 +359,28 @@ void set_initial_number_of_lanes_from_registry(ServerData* data) {
 
 	//GET VALUE FROM REGISTRY
 	if (RegOpenKeyEx(HKEY_CURRENT_USER, keyPath, 0, KEY_ALL_ACCESS, &hkey) == ERROR_SUCCESS) {
-		log(MSG_SERVERAPP_NUMBER_OF_LANES_KEY_OPENED);
+		log(MSG_SERVERAPP_INFO_NUMBER_OF_LANES_KEY_OPENED);
 		if (RegQueryValueEx(hkey, numberOfLanes_value, NULL, NULL, (LPBYTE)&numberOfLanes_data, &defaultSize) == ERROR_SUCCESS) {
-			log(MSG_SERVERAPP_NUMBER_OF_LANES_KEY_FOUND);
-			RegCloseKey(hkey);
+			log(MSG_SERVERAPP_INFO_NUMBER_OF_LANES_KEY_READ);
 		}
 		else {
-			log(MSG_SERVERAPP_INVALID_KEY_NUMBER_OF_LANES);
 			RegCloseKey(hkey);
+			log(MSG_SERVERAPP_INFO_NUMBER_OF_LANES_KEY_CLOSED);
 			close_serverapp(ERROR_INVALID_KEY_NUMBER_OF_LANES, data);
 		}
 	}
 	else {
-		log(MSG_SERVERAPP_CANT_OPEN_KEY);
 		RegCloseKey(hkey);
+		log(MSG_SERVERAPP_INFO_NUMBER_OF_LANES_KEY_CLOSED);
 		close_serverapp(ERROR_CANT_OPEN_KEY, data);
 	}
 
 	//GIVE VALUE TO VARIABLE IN SERVERDATA STRUCT
 	data->initialNumberOfLanes = numberOfLanes_data;
+	log(MSG_SERVERAPP_INFO_NUMBER_OF_LANES_SET);
+
+	RegCloseKey(hkey);
+	log(MSG_SERVERAPP_INFO_NUMBER_OF_LANES_KEY_CLOSED);
 }
 
 /// <summary>
@@ -380,29 +397,30 @@ void save_initial_number_of_lanes_to_registry(ServerData* data){
 	DWORD numberOfLanes_data = data->initialNumberOfLanes;
 
 	if (RegOpenKeyEx(HKEY_CURRENT_USER, keyPath, 0, KEY_ALL_ACCESS, &hkey) == ERROR_SUCCESS) {
-		log(MSG_SERVERAPP_NUMBER_OF_LANES_KEY_OPENED);
+		log(MSG_SERVERAPP_INFO_NUMBER_OF_LANES_KEY_OPENED);
 	}else{
-		log(MSG_SERVERAPP_CANT_OPEN_KEY);
+		log(MSG_SERVERAPP_ERROR_CANT_OPEN_KEY);
 		if (RegCreateKeyEx(HKEY_CURRENT_USER, keyPath, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &hkey, &res) == ERROR_SUCCESS) {
-			log(MSG_SERVERAPP_NUMBER_OF_LANES_KEY_CREATED);
+			log(MSG_SERVERAPP_INFO_NUMBER_OF_LANES_KEY_CREATED);
 		}
 		else {
-			log(MSG_SERVERAPP_CANT_CREATE_KEY);
 			RegCloseKey(hkey);
+			log(MSG_SERVERAPP_INFO_NUMBER_OF_LANES_KEY_CLOSED);
 			close_serverapp(ERROR_CANT_CREATE_KEY, data);
 		}
 	}
 
 	if (RegSetValueEx(hkey, numberOfLanes_value, 0, REG_DWORD, (LPBYTE)&numberOfLanes_data, sizeof(numberOfLanes_data)) == ERROR_SUCCESS) {
-		log(MSG_SERVERAPP_NUMBER_OF_LANES_KEY_SET);
+		log(MSG_SERVERAPP_INFO_NUMBER_OF_LANES_KEY_SET);
 	}
 	else {
-		log(MSG_SERVERAPP_CANT_SET_KEY);
 		RegCloseKey(hkey);
+		log(MSG_SERVERAPP_INFO_NUMBER_OF_LANES_KEY_CLOSED);
 		close_serverapp(ERROR_CANT_SET_KEY, data);
 	}
 
 	RegCloseKey(hkey);
+	log(MSG_SERVERAPP_INFO_NUMBER_OF_LANES_KEY_CLOSED);
 }
 
 /// <summary>
@@ -412,37 +430,48 @@ void save_initial_number_of_lanes_to_registry(ServerData* data){
 /// <param name="hMutex"></param>
 /// <returns></returns>
 int close_serverapp(int errorCode, ServerData* data) {
+	log(MSG_SERVERAPP_TITLE_EXIT);
 	switch (errorCode) {
 	case SUCCESS:
 		break;
 	case ERROR_MULTIPLE_INSTANCES_RUNNING:
+		log(MSG_SERVERAPP_ERROR_MULTIPLE_INSTANCES_RUNNING);
 		break;
 	case ERROR_UNKNOWN_ARGUMENT:
-		log(MSG_SERVERAPP_ARGUMENT_FORMAT);
+		log(MSG_SERVERAPP_ERROR_UNKNOWN_ARGUMENT);
+		log(MSG_SERVERAPP_INFO_ARGUMENT_FORMAT);
 		break;
 	case ERROR_INVALID_ARGUMENTS_QUANTITY:
-		log(MSG_SERVERAPP_ARGUMENT_FORMAT);
+		log(MSG_SERVERAPP_ERROR_INVALID_ARGUMENTS_QUANTITY);
+		log(MSG_SERVERAPP_INFO_ARGUMENT_FORMAT);
 		break;
 	case ERROR_INVALID_NUMBER_OF_LANES:
-		log(MSG_SERVERAPP_NUMBER_OF_LANES_ARGUMENT_LIMIT);
+		log(MSG_SERVERAPP_ERROR_INVALID_NUMBER_OF_LANES);
+		log(MSG_SERVERAPP_INFO_NUMBER_OF_LANES_ARGUMENT_LIMIT);
 		break;
 	case ERROR_INVALID_SPEED:
-		log(MSG_SERVERAPP_SPEED_ARGUMENT_LIMIT);
+		log(MSG_SERVERAPP_ERROR_INVALID_SPEED);
+		log(MSG_SERVERAPP_INFO_SPEED_ARGUMENT_LIMIT);
 		break;
 	case ERROR_INVALID_KEY_SPEED:
+		log(MSG_SERVERAPP_ERROR_INVALID_KEY_SPEED);
 		break;
 	case ERROR_INVALID_KEY_NUMBER_OF_LANES:
+		log(MSG_SERVERAPP_ERROR_INVALID_KEY_NUMBER_OF_LANES);
 		break;
 	case ERROR_CANT_OPEN_KEY:
+		log(MSG_SERVERAPP_ERROR_CANT_OPEN_KEY);
 		break;
 	case ERROR_CANT_CREATE_KEY:
+		log(MSG_SERVERAPP_ERROR_CANT_CREATE_KEY);
 		break;
 	case ERROR_CANT_SET_KEY:
+		log(MSG_SERVERAPP_ERROR_CANT_SET_KEY);
 		break;
 	default:
 		break;
 	}
-	log(MSG_SERVERAPP_CLOSE_SUCCESS);
+	log(MSG_SERVERAPP_INFO_CLOSE_SUCCESS);
 	ReleaseMutex(data->hMutex);
 	CloseHandle(data->hMutex);
 	exit(errorCode);
