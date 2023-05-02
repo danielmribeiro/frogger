@@ -10,26 +10,83 @@ typedef struct {
 	int isInitialSpeedValueFromArgsValid;
 	int initialSpeedFromArgsValuePosition;
 	int initialSpeed;
-} ServerData;
+	int currentNumberOfPlayersConnected;
+} ServerAppData;
+
+typedef enum {
+	OFF,
+	DEMO,
+	INDIVIDUAL,
+	COMPETITIVE
+} GameState;
+
+typedef enum {
+	START,
+	STREET,
+	FINISH
+} LaneType;
+
+typedef struct {
+	GameState gameState;
+	int level;
+	int score;
+	int num_lanes;
+	int num_lanes_length;
+	int num_frogs;
+	int num_cars;
+	int num_obstacles;
+	struct Lane {
+		int y;
+		LaneType lane;
+	} lanes[LANES_MAX];
+	struct Frog {
+		int x;
+		int y;
+		int lives;
+		TCHAR playerName;
+	} frogs[FROGS_MAX];
+	struct Car {
+		int x;
+		int y;
+		int speed;
+	}cars[CARS_MAX];
+	struct Obstacle {
+		int x;
+		int y;
+	} obstacle[OBSTACLES_MAX];
+} FroggerGameboard;
+
+typedef enum {
+	RIGHT,
+	LEFT,
+	FRONT,
+	BACK,
+	STOP
+} Direction;
+
+typedef struct {
+	TCHAR playerName;
+	Direction lastMove;
+} FroggerPlay;
 
 void log(TCHAR *logString);
-void fill_default_serverdata(ServerData* data);
-void check_single_instance(ServerData* data);
-void initialize_variables(int argc, TCHAR* argv[], ServerData* data);
-void check_valid_arguments_keys(int argc, TCHAR* argv[], ServerData* data);
-void check_valid_arguments_values(TCHAR* argv[], ServerData* data);
+void fill_default_serverappdata(ServerAppData* data);
+void check_single_instance(ServerAppData* data);
+void initialize_variables(int argc, TCHAR* argv[], ServerAppData* data);
+void check_valid_arguments_keys(int argc, TCHAR* argv[], ServerAppData* data);
+void check_valid_arguments_values(TCHAR* argv[], ServerAppData* data);
 
-void set_initial_speed(TCHAR* argv[], ServerData* data);
-void set_initial_speed_from_args(TCHAR* argv[], ServerData* data);
-void set_initial_speed_from_registry(ServerData* data);
-void save_initial_speed_to_registry(ServerData* data);
+void set_initial_speed(TCHAR* argv[], ServerAppData* data);
+void set_initial_speed_from_args(TCHAR* argv[], ServerAppData* data);
+void set_initial_speed_from_registry(ServerAppData* data);
+void save_initial_speed_to_registry(ServerAppData* data);
 
-void set_initial_number_of_lanes(TCHAR* argv[], ServerData* data);
-void set_initial_number_of_lanes_from_args(TCHAR* argv[], ServerData* data);
-void set_initial_number_of_lanes_from_registry(ServerData* data);
-void save_initial_number_of_lanes_to_registry(ServerData* data);
+void set_initial_number_of_lanes(TCHAR* argv[], ServerAppData* data);
+void set_initial_number_of_lanes_from_args(TCHAR* argv[], ServerAppData* data);
+void set_initial_number_of_lanes_from_registry(ServerAppData* data);
+void save_initial_number_of_lanes_to_registry(ServerAppData* data);
 
-int close_serverapp(int errorCode, ServerData* data);
+int close_serverapp(int errorCode, ServerAppData* data);
 
 int _tmain(int argc, TCHAR *argv[]) {
 
@@ -42,8 +99,8 @@ int _tmain(int argc, TCHAR *argv[]) {
 	//WELCOME
 	log(MSG_SERVERAPP_TITLE_FROGGER);
 	
-	ServerData data;
-	fill_default_serverdata(&data);
+	ServerAppData data;
+	fill_default_serverappdata(&data);
 
 	//CHECK SINGLE INSTANCE RUNNING
 	check_single_instance(&data);
@@ -67,10 +124,10 @@ void log(TCHAR *logString) {
 }
 
 /// <summary>
-/// Fill the ServerData struct default values
+/// Fill the ServerAppData struct default values
 /// </summary>
 /// <param name="data"></param>
-void fill_default_serverdata(ServerData* data) {
+void fill_default_serverappdata(ServerAppData* data) {
 	data->hMutex = NULL;
 	
 	data->isInitialNumberOfLanesFromArgs = FALSE;
@@ -83,13 +140,15 @@ void fill_default_serverdata(ServerData* data) {
 	
 	data->initialSpeed = -1;
 	data->initialNumberOfLanes = -1;
+
+	data->currentNumberOfPlayersConnected = 0;
 }
 
 /// <summary>
 /// Checks if there's only one ServerApp instance running currently
 /// </summary>
 /// <param name="hMutex"></param>
-void check_single_instance(ServerData* data) {
+void check_single_instance(ServerAppData* data) {
 	log(MSG_SERVERAPP_TITLE_CHECK_SINGLE_INSTANCE);
 	data->hMutex = CreateMutex(NULL, TRUE, FROGGER_SERVERAPP_ONLINE);
 	if (GetLastError() == ERROR_ALREADY_EXISTS)
@@ -108,7 +167,7 @@ void check_single_instance(ServerData* data) {
 /// <param name="argc"></param>
 /// <param name="argv"></param>
 /// <param name="data"></param>
-void initialize_variables(int argc, TCHAR* argv[], ServerData* data) {
+void initialize_variables(int argc, TCHAR* argv[], ServerAppData* data) {
 	check_valid_arguments_keys(argc, argv, data);
 	check_valid_arguments_values(argv, data);
 
@@ -122,7 +181,7 @@ void initialize_variables(int argc, TCHAR* argv[], ServerData* data) {
 /// <param name="argc"></param>
 /// <param name="argv"></param>
 /// <param name="data"></param>
-void check_valid_arguments_keys(int argc, TCHAR* argv[], ServerData* data) {
+void check_valid_arguments_keys(int argc, TCHAR* argv[], ServerAppData* data) {
 	switch (argc) {
 	case 1:
 		data->isInitialNumberOfLanesFromArgs = FALSE;
@@ -171,7 +230,7 @@ void check_valid_arguments_keys(int argc, TCHAR* argv[], ServerData* data) {
 /// </summary>
 /// <param name="argv"></param>
 /// <param name="data"></param>
-void check_valid_arguments_values(TCHAR* argv[], ServerData* data) {
+void check_valid_arguments_values(TCHAR* argv[], ServerAppData* data) {
 	int valuePosition = -1;
 
 	//NUMBER OF LANES
@@ -202,7 +261,7 @@ void check_valid_arguments_values(TCHAR* argv[], ServerData* data) {
 /// </summary>
 /// <param name="argv"></param>
 /// <param name="data"></param>
-void set_initial_speed(TCHAR* argv[], ServerData* data) {
+void set_initial_speed(TCHAR* argv[], ServerAppData* data) {
 	log(MSG_SERVERAPP_TITLE_SPEED);
 
 	//SET INITIAL SPEED
@@ -225,7 +284,7 @@ void set_initial_speed(TCHAR* argv[], ServerData* data) {
 /// </summary>
 /// <param name="argv"></param>
 /// <param name="data"></param>
-void set_initial_speed_from_args(TCHAR* argv[], ServerData* data) {
+void set_initial_speed_from_args(TCHAR* argv[], ServerAppData* data) {
 	data->initialSpeed = _ttoi(argv[data->initialSpeedFromArgsValuePosition]);
 	log(MSG_SERVERAPP_INFO_SPEED_SET);
 }
@@ -234,7 +293,7 @@ void set_initial_speed_from_args(TCHAR* argv[], ServerData* data) {
 /// Set the initial speed value from the registry
 /// </summary>
 /// <param name="data"></param>
-void set_initial_speed_from_registry(ServerData* data) {
+void set_initial_speed_from_registry(ServerAppData* data) {
 	TCHAR keyPath[sizeof(KEYPATH_NAME)] = KEYPATH_NAME;
 	TCHAR speed_value[sizeof(SPEED_KEY_NAME)] = SPEED_KEY_NAME;
 	HKEY hkey;
@@ -274,7 +333,7 @@ void set_initial_speed_from_registry(ServerData* data) {
 /// Save the value of the initial speed in the registry
 /// </summary>
 /// <param name="data"></param>
-void save_initial_speed_to_registry(ServerData* data) {
+void save_initial_speed_to_registry(ServerAppData* data) {
 	TCHAR keyPath[sizeof(KEYPATH_NAME)] = KEYPATH_NAME;
 	TCHAR speed_value[sizeof(SPEED_KEY_NAME)] = SPEED_KEY_NAME;
 	HKEY hkey;
@@ -316,7 +375,7 @@ void save_initial_speed_to_registry(ServerData* data) {
 /// </summary>
 /// <param name="argv"></param>
 /// <param name="data"></param>
-void set_initial_number_of_lanes(TCHAR* argv[], ServerData* data) {
+void set_initial_number_of_lanes(TCHAR* argv[], ServerAppData* data) {
 	log(MSG_SERVERAPP_TITLE_NUMBER_OF_LANES);
 
 	//SET INITIAL NUMBER OF LANES
@@ -339,7 +398,7 @@ void set_initial_number_of_lanes(TCHAR* argv[], ServerData* data) {
 /// </summary>
 /// <param name="argv"></param>
 /// <param name="data"></param>
-void set_initial_number_of_lanes_from_args(TCHAR* argv[], ServerData* data) {
+void set_initial_number_of_lanes_from_args(TCHAR* argv[], ServerAppData* data) {
 	data->initialNumberOfLanes = _ttoi(argv[data->initialNumberOfLanesFromArgsValuePosition]);
 	log(MSG_SERVERAPP_INFO_NUMBER_OF_LANES_SET);
 }
@@ -348,7 +407,7 @@ void set_initial_number_of_lanes_from_args(TCHAR* argv[], ServerData* data) {
 /// Set the initial number of lanes value from the registry
 /// </summary>
 /// <param name="data"></param>
-void set_initial_number_of_lanes_from_registry(ServerData* data) {
+void set_initial_number_of_lanes_from_registry(ServerAppData* data) {
 	TCHAR keyPath[sizeof(KEYPATH_NAME)] = KEYPATH_NAME;
 	TCHAR numberOfLanes_value[sizeof(NUMBER_OF_LANES_KEY_NAME)] = NUMBER_OF_LANES_KEY_NAME;
 	HKEY hkey;
@@ -387,7 +446,7 @@ void set_initial_number_of_lanes_from_registry(ServerData* data) {
 /// Save the value of the initial number of lanes in the registry
 /// </summary>
 /// <param name="data"></param>
-void save_initial_number_of_lanes_to_registry(ServerData* data){
+void save_initial_number_of_lanes_to_registry(ServerAppData* data){
 	TCHAR keyPath[sizeof(KEYPATH_NAME)] = KEYPATH_NAME;
 	TCHAR numberOfLanes_value[sizeof(NUMBER_OF_LANES_KEY_NAME)] = NUMBER_OF_LANES_KEY_NAME;
 	HKEY hkey;
@@ -429,7 +488,7 @@ void save_initial_number_of_lanes_to_registry(ServerData* data){
 /// <param name="errorCode"></param>
 /// <param name="hMutex"></param>
 /// <returns></returns>
-int close_serverapp(int errorCode, ServerData* data) {
+int close_serverapp(int errorCode, ServerAppData* data) {
 	log(MSG_SERVERAPP_TITLE_EXIT);
 	switch (errorCode) {
 	case SUCCESS:
