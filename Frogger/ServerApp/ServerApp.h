@@ -23,7 +23,7 @@
 #define MSG_SERVERAPP_TITLE_SET_NUMBER_OF_LANES_FROM_ARGUMENTS _T("\n------- SET NUMBER OF LANES FROM ARGUMENTS -------")
 #define MSG_SERVERAPP_TITLE_SET_NUMBER_OF_LANES_FROM_REGISTRY _T("\n------- SET NUMBER OF LANES FROM REGISTRY -------")
 #define MSG_SERVERAPP_TITLE_SAVE_NUMBER_OF_LANES _T("\n------- SAVE NUMBER OF LANES -------")
-#define MSG_SERVERAPP_TITLE_EXIT _T("\n------- EXIT FROGGER -------")
+#define MSG_SERVERAPP_TITLE_EXIT _T("\n------- EXIT FROGGER - SERVERAPP -------")
 
 //INFO MESSAGES
 #define MSG_SERVERAPP_INFO_SINGLE_INSTANCE_RUNNING _T("[INFO]: This ServerApp instance is the only one running currently!")
@@ -42,9 +42,9 @@
 #define MSG_SERVERAPP_INFO_ARGUMENT_FORMAT _T("[INFO]: You should use one of the following options:\n\t./ServerApp\n\t\tExample: ./ServerApp\n\n\t./ServerApp -s [SPEED]\n\t\tExample: ./ServerApp 50\n\n\t./ServerApp -l [NUMBER_OF_LANES]\n\t\tExample: ./ServerApp 5\n\n\t./ServerApp -s [SPEED] -l [NUMBER_OF_LANES]\n\t\tExample: ./server -s 50 -l 5\n\n\t./ServerApp -l [NUMBER_OF_LANES] -s [SPEED]\n\t\tExample: ./server -l 5 -s 50\n\n")
 #define MSG_SERVERAPP_INFO_SPEED_ARGUMENT_LIMIT _T("[INFO]: The speed value needs to be between 5 and 120")
 #define MSG_SERVERAPP_INFO_NUMBER_OF_LANES_ARGUMENT_LIMIT _T("[INFO]: The number of lanes value needs to be between 1 and 8")
-#define MSG_SERVERAPP_INFO_CLOSE_SUCCESS _T("[INFO]: ServerApp is closing successfully!")
 
-//ERROR MESSAGES
+///ERROR/CLOSE MESSAGES
+#define MSG_SERVERAPP_INFO_CLOSE_SUCCESS _T("[INFO]: ServerApp is closing successfully!")
 #define MSG_SERVERAPP_ERROR_MULTIPLE_INSTANCES_RUNNING _T("[ERROR]: There's already a ServerApp instance running!")
 #define MSG_SERVERAPP_ERROR_UNKNOWN_ARGUMENT _T("[ERROR]: There's an unknown value in the arguments!")
 #define MSG_SERVERAPP_ERROR_INVALID_ARGUMENTS_QUANTITY _T("[ERROR]: There's an invalid number of arguments!")
@@ -106,11 +106,6 @@
 
 //OBSTACLES
 #define OBSTACLES_MAX (LANES_LENGTH+LANES_MAX)
-
-//GAME PAWNS
-#define PAWN_FROG _T("F")
-#define PAWN_CAR _T("C")
-#define PAWN_TREE _T("T")
 
 //LIVES
 #define LIVES_MAX 3

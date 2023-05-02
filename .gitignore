@@ -54,3 +54,4 @@ dkms.conf
 # Visual Studio
 Frogger/.vs/
 Frogger/ServerApp/x64/
+Frogger/OperatorApp/x64/
