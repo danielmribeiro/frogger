@@ -111,6 +111,9 @@ int _tmain(int argc, TCHAR *argv[]) {
 	//LIST SPEED AND NUMBER OF LANES
 	_tprintf(_T("\n\nSpeed - %d\nNumber Of Lanes - %d\n\n"), data.initialSpeed, data.initialNumberOfLanes);
 
+
+	_gettchar();
+
 	//CLOSE SERVER
 	close_serverapp(SUCCESS, &data);
 }
@@ -492,6 +495,7 @@ int close_serverapp(int errorCode, ServerAppData* data) {
 	log(MSG_SERVERAPP_TITLE_EXIT);
 	switch (errorCode) {
 	case SUCCESS:
+		log(MSG_SERVERAPP_INFO_CLOSE_SUCCESS);
 		break;
 	case ERROR_MULTIPLE_INSTANCES_RUNNING:
 		log(MSG_SERVERAPP_ERROR_MULTIPLE_INSTANCES_RUNNING);
@@ -530,7 +534,6 @@ int close_serverapp(int errorCode, ServerAppData* data) {
 	default:
 		break;
 	}
-	log(MSG_SERVERAPP_INFO_CLOSE_SUCCESS);
 	ReleaseMutex(data->hMutex);
 	CloseHandle(data->hMutex);
 	exit(errorCode);
