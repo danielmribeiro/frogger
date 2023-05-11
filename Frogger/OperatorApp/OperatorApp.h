@@ -1,12 +1,7 @@
-#pragma once
-#include <Windows.h>
-#include <tchar.h>
-#include <fcntl.h>
-#include <io.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <ctype.h>
+#ifndef _OPERATORAPP_H_
+#define _OPERATORAPP_H_
+
+#include "Base.h"
 
 //LOGIC
 #define TRUE 1
@@ -30,3 +25,5 @@
 
 //MUTEX
 #define FROGGER_SERVERAPP_ONLINE _T("FROGGER_SERVERAPP_ONLINE")
+
+#endif
