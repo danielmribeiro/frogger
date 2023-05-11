@@ -1,5 +1,5 @@
-#ifndef _MESSAGES_H_
-#define _MESSAGES_H_
+#ifndef _CONSTANTS_H_
+#define _CONSTANTS_H_
 
 //TITLE MESSAGES
 #define MSG_SERVERAPP_TITLE_FROGGER _T("\n::::::: FROGGER - ServerApp :::::::")
