@@ -26,6 +26,16 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\Base.h" />
+    <ClInclude Include="..\src\Constants.h" />
+    <ClInclude Include="..\src\ServerApp.h" />
+    <ClInclude Include="..\src\ServerUtil.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\ServerApp.c" />
+    <ClCompile Include="..\src\ServerUtil.c" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
@@ -176,16 +186,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="ServerApp.c" />
-    <ClCompile Include="ServerUtil.c" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Base.h" />
-    <ClInclude Include="Constants.h" />
-    <ClInclude Include="ServerUtil.h" />
-    <ClInclude Include="ServerApp.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
