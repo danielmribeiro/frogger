@@ -22,7 +22,9 @@ int _tmain(int argc, TCHAR *argv[]) {
 
 	//LIST SPEED AND NUMBER OF LANES
 	_tprintf(_T("\n\nSpeed - %d\nNumber Of Lanes - %d\n\n"), data.initialSpeed, data.initialNumberOfLanes);
-
+	
+	SharedMemoryHandle sh = CreateSharedMemory("belele", (size_t)20);
+	_tprintf(_T("%p", sh));
 
 	_gettchar();
 

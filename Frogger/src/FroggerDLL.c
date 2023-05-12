@@ -1,6 +1,6 @@
 #include "FroggerDLL.h"
 
-SharedMemoryHandle CreateSharedMemory(const char* name, size_t size)
+EXPORT SharedMemoryHandle CreateSharedMemory(const char* name, size_t size)
 {
     SharedMemoryHandle handle = NULL;
 
@@ -13,7 +13,7 @@ SharedMemoryHandle CreateSharedMemory(const char* name, size_t size)
     return handle;
 }
 
-SharedMemoryHandle OpenSharedMemory(const char* name)
+EXPORT SharedMemoryHandle OpenSharedMemory(const char* name)
 {
     SharedMemoryHandle handle = NULL;
 
@@ -26,7 +26,7 @@ SharedMemoryHandle OpenSharedMemory(const char* name)
     return handle;
 }
 
-bool WriteSharedMemory(SharedMemoryHandle handle, const void* data, size_t size)
+EXPORT bool WriteSharedMemory(SharedMemoryHandle handle, const void* data, size_t size)
 {
     bool success = false;
 
@@ -45,7 +45,7 @@ bool WriteSharedMemory(SharedMemoryHandle handle, const void* data, size_t size)
     return success;
 }
 
-bool ReadSharedMemory(SharedMemoryHandle handle, void* data, size_t size)
+EXPORT bool ReadSharedMemory(SharedMemoryHandle handle, void* data, size_t size)
 {
     bool success = false;
 
@@ -64,7 +64,7 @@ bool ReadSharedMemory(SharedMemoryHandle handle, void* data, size_t size)
     return success;
 }
 
-bool CloseSharedMemory(SharedMemoryHandle handle)
+EXPORT bool CloseSharedMemory(SharedMemoryHandle handle)
 {
     bool success = false;
 
