@@ -1,17 +1,5 @@
 #include "ServerApp.h"
 
-typedef struct {
-	HANDLE hMutex;
-	int isInitialNumberOfLanesFromArgs;
-	int initialNumberOfLanesFromArgsValuePosition;
-	int isInitialNumberOfLanesValueFromArgsValid;
-	int initialNumberOfLanes;
-	int isInitialSpeedFromArgs;
-	int isInitialSpeedValueFromArgsValid;
-	int initialSpeedFromArgsValuePosition;
-	int initialSpeed;
-	int currentNumberOfPlayersConnected;
-} ServerAppData;
 
 typedef enum {
 	OFF,
@@ -27,6 +15,29 @@ typedef enum {
 } LaneType;
 
 typedef struct {
+	int y;
+	LaneType lane;
+} Lane;
+
+typedef struct {
+	int x;
+	int y;
+	int lives;
+	TCHAR playerName[128];
+} Frog;
+
+typedef struct {
+	int x;
+	int y;
+	int speed;
+} Car;
+
+typedef struct {
+	int x;
+	int y;
+} Obstacle;
+
+typedef struct {
 	GameState gameState;
 	int level;
 	int score;
@@ -35,25 +46,10 @@ typedef struct {
 	int num_frogs;
 	int num_cars;
 	int num_obstacles;
-	struct Lane {
-		int y;
-		LaneType lane;
-	} lanes[LANES_MAX];
-	struct Frog {
-		int x;
-		int y;
-		int lives;
-		TCHAR playerName;
-	} frogs[FROGS_MAX];
-	struct Car {
-		int x;
-		int y;
-		int speed;
-	}cars[CARS_MAX];
-	struct Obstacle {
-		int x;
-		int y;
-	} obstacle[OBSTACLES_MAX];
+	Lane lane[LANES_MAX];
+	Frog frog[FROGS_MAX];
+	Car cars[CARS_MAX];
+	Obstacle obstacle[OBSTACLES_MAX];
 } FroggerGameboard;
 
 typedef enum {
@@ -65,9 +61,24 @@ typedef enum {
 } Direction;
 
 typedef struct {
-	TCHAR playerName;
+	TCHAR playerName[128];
 	Direction lastMove;
 } FroggerPlay;
+
+typedef struct {
+	HANDLE hMutex;
+	HANDLE hThreads[2];
+	int isInitialNumberOfLanesFromArgs;
+	int initialNumberOfLanesFromArgsValuePosition;
+	int isInitialNumberOfLanesValueFromArgsValid;
+	int initialNumberOfLanes;
+	int isInitialSpeedFromArgs;
+	int isInitialSpeedValueFromArgsValid;
+	int initialSpeedFromArgsValuePosition;
+	int initialSpeed;
+	int currentNumberOfPlayersConnected;
+	FroggerGameboard froggerGameboard;
+} ServerAppData;
 
 void log(TCHAR *logString);
 void fill_default_serverappdata(ServerAppData* data);
@@ -85,6 +96,12 @@ void set_initial_number_of_lanes(TCHAR* argv[], ServerAppData* data);
 void set_initial_number_of_lanes_from_args(TCHAR* argv[], ServerAppData* data);
 void set_initial_number_of_lanes_from_registry(ServerAppData* data);
 void save_initial_number_of_lanes_to_registry(ServerAppData* data);
+
+void initialize_threads(ServerAppData* data);
+DWORD WINAPI ThreadCommands(ServerAppData* data);
+DWORD WINAPI ThreadConsume(ServerAppData* data);
+
+void CreateDemoGame(ServerAppData* data);
 
 int close_serverapp(int errorCode, ServerAppData* data);
 
@@ -111,6 +128,8 @@ int _tmain(int argc, TCHAR *argv[]) {
 	//LIST SPEED AND NUMBER OF LANES
 	_tprintf(_T("\n\nSpeed - %d\nNumber Of Lanes - %d\n\n"), data.initialSpeed, data.initialNumberOfLanes);
 
+	//INITIALIZE THREADS
+	initialize_threads(&data);
 
 	_gettchar();
 
@@ -132,6 +151,9 @@ void log(TCHAR *logString) {
 /// <param name="data"></param>
 void fill_default_serverappdata(ServerAppData* data) {
 	data->hMutex = NULL;
+
+	data->hThreads[0] = NULL;
+	data->hThreads[1] = NULL;
 	
 	data->isInitialNumberOfLanesFromArgs = FALSE;
 	data->initialNumberOfLanesFromArgsValuePosition = -1;
@@ -145,6 +167,8 @@ void fill_default_serverappdata(ServerAppData* data) {
 	data->initialNumberOfLanes = -1;
 
 	data->currentNumberOfPlayersConnected = 0;
+
+	
 }
 
 /// <summary>
@@ -484,6 +508,100 @@ void save_initial_number_of_lanes_to_registry(ServerAppData* data){
 	RegCloseKey(hkey);
 	log(MSG_SERVERAPP_INFO_NUMBER_OF_LANES_KEY_CLOSED);
 }
+
+void initialize_threads(ServerAppData* data) {
+	data->hThreads[0] = CreateThread(NULL, 0, ThreadCommands, data, 0, NULL);
+	data->hThreads[1] = CreateThread(NULL, 0, ThreadConsume, data, 0, NULL);
+	WaitForMultipleObjects(2, data->hThreads, TRUE, INFINITE);
+}
+
+/// <summary>
+/// Thread responsable to Write the Server Commands
+/// </summary>
+/// <param name="data"></param>
+/// <returns></returns>
+DWORD WINAPI ThreadCommands(ServerAppData* data) {
+	TCHAR serverCmd[SIZEOF_SERVERCMD];
+	while (1) {
+		log(MSG_SERVERAPP_INTERACTION_INSERT_COMMAND);
+		_fgetts(serverCmd, SIZEOF_SERVERCMD, stdin);
+		_tprintf(TEXT("Handling Command: %s\n"), serverCmd);
+		if (_tcsicmp(COMMAND_QUIT, serverCmd) == 0) {
+			log(MSG_SERVERAPP_INFO_COMMAND_QUIT);
+			break;
+		}
+		if (_tcsicmp(COMMAND_DEMO, serverCmd) == 0) {
+			log(MSG_SERVERAPP_INFO_COMMAND_DEMO);
+			CreateDemoGame(data);
+		}
+	}
+}
+
+void CreateDemoGame(ServerAppData* data) {
+	data->froggerGameboard.gameState = DEMO;
+	data->froggerGameboard.level = 1;
+	data->froggerGameboard.score = 0;
+	data->froggerGameboard.num_lanes = STARTLINE_DEFAULT + data->initialNumberOfLanes + FINISHLINE_DEFAULT;
+	data->froggerGameboard.num_lanes_length = LANES_LENGTH;
+	data->froggerGameboard.num_frogs = 2;
+	data->froggerGameboard.num_cars = 3;
+	data->froggerGameboard.num_obstacles = 2;
+
+	//START LANES
+	for (int i = 0; i < STARTLINE_DEFAULT; i++) {
+		data->froggerGameboard.lane[i].lane = START;
+		data->froggerGameboard.lane[i].y = i;
+	}
+	//STREET LANES
+	for (int i = STARTLINE_DEFAULT; i < STARTLINE_DEFAULT+data->initialNumberOfLanes; i++) {
+		data->froggerGameboard.lane[i].lane = STREET;
+		data->froggerGameboard.lane[i].y = i;
+	}
+	//FINISH LANES
+	for (int i = STARTLINE_DEFAULT + data->initialNumberOfLanes; i < data->froggerGameboard.num_lanes; i++) {
+		data->froggerGameboard.lane[i].lane = FINISH;
+		data->froggerGameboard.lane[i].y = i;
+	}
+	
+	//FIRST FROG
+	data->froggerGameboard.frog[0].lives = 1;
+	_tcscpy_s(data->froggerGameboard.frog[0].playerName,_countof(data->froggerGameboard.frog[0].playerName), PLAYER1);
+	data->froggerGameboard.frog[0].x = 0;
+	data->froggerGameboard.frog[0].y = 0;
+
+	//SECOND FROG
+	data->froggerGameboard.frog[1].lives = 1;
+	_tcscpy_s(data->froggerGameboard.frog[1].playerName, _countof(data->froggerGameboard.frog[1].playerName), PLAYER2);
+	data->froggerGameboard.frog[1].x = 1;
+	data->froggerGameboard.frog[1].y = 0;
+
+	//CARS
+	int index = 0;
+	for (int i = STARTLINE_DEFAULT; i < STARTLINE_DEFAULT + data->initialNumberOfLanes; i++) {
+		for (int j = 0; j < data->froggerGameboard.num_cars; j++) {
+			index = ((i-STARTLINE_DEFAULT) * data->froggerGameboard.num_cars) + j;
+			data->froggerGameboard.cars[index].speed = data->initialSpeed;
+			data->froggerGameboard.cars[index].x = i;
+			data->froggerGameboard.cars[index].y = j;
+		}
+	}
+
+	//OBSTACLES
+	for (int i = STARTLINE_DEFAULT; i < STARTLINE_DEFAULT + data->initialNumberOfLanes; i++) {
+		for (int j = data->froggerGameboard.num_cars; j < data->froggerGameboard.num_cars + data->froggerGameboard.num_obstacles; j++) {
+			index = ((i- STARTLINE_DEFAULT) * data->froggerGameboard.num_obstacles) + j- data->froggerGameboard.num_cars;
+			data->froggerGameboard.obstacle[index].x = i;
+			data->froggerGameboard.obstacle[index].y = j;
+		}
+	}
+}
+
+/// <summary>
+/// Thread responsable to Consume the Operator and Client Apps
+/// </summary>
+/// <param name="data"></param>
+/// <returns></returns>
+DWORD WINAPI ThreadConsume(ServerAppData* data) {}
 
 /// <summary>
 /// Closes the ServerApp correctly

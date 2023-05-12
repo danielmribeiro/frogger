@@ -25,6 +25,9 @@
 #define MSG_SERVERAPP_TITLE_SAVE_NUMBER_OF_LANES _T("\n------- SAVE NUMBER OF LANES -------")
 #define MSG_SERVERAPP_TITLE_EXIT _T("\n------- EXIT FROGGER - SERVERAPP -------")
 
+//INTERACTION MESSAGES
+#define MSG_SERVERAPP_INTERACTION_INSERT_COMMAND _T("\n\nPLEASE INSERT A COMMAND:")
+
 //INFO MESSAGES
 #define MSG_SERVERAPP_INFO_SINGLE_INSTANCE_RUNNING _T("[INFO]: This ServerApp instance is the only one running currently!")
 #define MSG_SERVERAPP_INFO_SPEED_KEY_OPENED _T("[INFO]: Speed key was opened!")
@@ -42,6 +45,8 @@
 #define MSG_SERVERAPP_INFO_ARGUMENT_FORMAT _T("[INFO]: You should use one of the following options:\n\t./ServerApp\n\t\tExample: ./ServerApp\n\n\t./ServerApp -s [SPEED]\n\t\tExample: ./ServerApp 50\n\n\t./ServerApp -l [NUMBER_OF_LANES]\n\t\tExample: ./ServerApp 5\n\n\t./ServerApp -s [SPEED] -l [NUMBER_OF_LANES]\n\t\tExample: ./server -s 50 -l 5\n\n\t./ServerApp -l [NUMBER_OF_LANES] -s [SPEED]\n\t\tExample: ./server -l 5 -s 50\n\n")
 #define MSG_SERVERAPP_INFO_SPEED_ARGUMENT_LIMIT _T("[INFO]: The speed value needs to be between 5 and 120")
 #define MSG_SERVERAPP_INFO_NUMBER_OF_LANES_ARGUMENT_LIMIT _T("[INFO]: The number of lanes value needs to be between 1 and 8")
+#define MSG_SERVERAPP_INFO_COMMAND_QUIT _T("[INFO]: The QUIT command was executed!")
+#define MSG_SERVERAPP_INFO_COMMAND_DEMO _T("[INFO]: The DEMO command was executed!")
 
 ///ERROR/CLOSE MESSAGES
 #define MSG_SERVERAPP_INFO_CLOSE_SUCCESS _T("[INFO]: ServerApp is closing successfully!")
@@ -96,18 +101,25 @@
 
 //CARS
 #define CARS_MIN 0
-#define CARS_MAX (LANES_LENGTH+LANES_MAX)
+#define CARS_MAX (LANES_LENGTH*LANES_MAX)
 #define CARS_DEFAULT CARS_MIN
 
 //FROGS
 #define FROGS_MAX 2
 #define FROGS_INDIVIDUAL 1
 #define FROGS_COMPETITIVE 2
+#define PLAYER1 _T("PLAYER 1")
+#define PLAYER2 _T("PLAYER 2")
+#define PLAYER_NAME_SIZE 128
 
 //OBSTACLES
-#define OBSTACLES_MAX (LANES_LENGTH+LANES_MAX)
+#define OBSTACLES_MAX (LANES_LENGTH*LANES_MAX)
 
 //LIVES
 #define LIVES_MAX 3
 #define LIVES_DEFAULT LIVES_DEFAULT
 
+//COMMANDS
+#define SIZEOF_SERVERCMD 128
+#define COMMAND_QUIT _T("QUIT\n")
+#define COMMAND_DEMO _T("DEMO\n")
