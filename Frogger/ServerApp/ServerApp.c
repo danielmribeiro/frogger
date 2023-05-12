@@ -78,6 +78,8 @@ typedef struct {
 	int initialSpeed;
 	int currentNumberOfPlayersConnected;
 	FroggerGameboard froggerGameboard;
+	int gameStarted;
+	int gameIsRunning;
 } ServerAppData;
 
 void log(TCHAR *logString);
@@ -167,6 +169,9 @@ void fill_default_serverappdata(ServerAppData* data) {
 	data->initialNumberOfLanes = -1;
 
 	data->currentNumberOfPlayersConnected = 0;
+
+	data->gameStarted = FALSE;
+	data->gameIsRunning = FALSE;
 
 	
 }
@@ -526,18 +531,128 @@ DWORD WINAPI ThreadCommands(ServerAppData* data) {
 		log(MSG_SERVERAPP_INTERACTION_INSERT_COMMAND);
 		_fgetts(serverCmd, SIZEOF_SERVERCMD, stdin);
 		_tprintf(TEXT("Handling Command: %s\n"), serverCmd);
-		if (_tcsicmp(COMMAND_QUIT, serverCmd) == 0) {
-			log(MSG_SERVERAPP_INFO_COMMAND_QUIT);
-			break;
-		}
 		if (_tcsicmp(COMMAND_DEMO, serverCmd) == 0) {
 			log(MSG_SERVERAPP_INFO_COMMAND_DEMO);
-			CreateDemoGame(data);
+			StartGame(data, GAME_DEMO);
+		}
+		else if (_tcsicmp(COMMAND_SUSPEND, serverCmd) == 0) {
+			log(MSG_SERVERAPP_INFO_COMMAND_SUSPEND);
+			SuspendGame(data);
+		}
+		else if (_tcsicmp(COMMAND_RESUME, serverCmd) == 0) {
+			log(MSG_SERVERAPP_INFO_COMMAND_RESUME);
+			ResumeGame(data);
+		}
+		else if (_tcsicmp(COMMAND_RESTART, serverCmd) == 0) {
+			log(MSG_SERVERAPP_INFO_COMMAND_RESTART);
+			RestartGame(data);
+		}
+		else if (_tcsicmp(COMMAND_EXIT, serverCmd) == 0) {
+			log(MSG_SERVERAPP_INFO_COMMAND_EXIT);
+			ExitGame(data, TRUE);
+		}
+		else if (_tcsicmp(COMMAND_QUIT, serverCmd) == 0) {
+			log(MSG_SERVERAPP_INFO_COMMAND_QUIT);
+			close_serverapp(ERROR_SUCCESS_COMMAND_QUIT, data);
+		}
+		else {
+			log(MSG_SERVERAPP_INFO_COMMAND_NOT_FOUND);
 		}
 	}
 }
 
-void CreateDemoGame(ServerAppData* data) {
+
+void SuspendGame(ServerAppData* data) {
+	if (data->gameStarted == FALSE) {
+		log(MSG_SERVERAPP_INFO_SUSPEND_GAME_NOT_STARTED);
+	}
+	else {
+		if (data->gameIsRunning == FALSE) {
+			log(MSG_SERVERAPP_INFO_SUSPEND_GAME_NOT_RUNNING);
+		}
+		else {
+			data->gameIsRunning = FALSE;
+		}
+	}
+}
+
+void ResumeGame(ServerAppData* data) {
+	if (data->gameStarted == FALSE) {
+		log(MSG_SERVERAPP_INFO_RESUME_GAME_NOT_STARTED);
+	}
+	else {
+		if (data->gameIsRunning == TRUE) {
+			log(MSG_SERVERAPP_INFO_RESUME_GAME_RUNNING);
+		}
+		else {
+			data->gameIsRunning = TRUE;
+		}
+	}
+}
+
+void RestartGame(ServerAppData* data) {
+	if (data->gameStarted == FALSE) {
+		log(MSG_SERVERAPP_INFO_RESTART_GAME_NOT_STARTED);
+	}
+	else {
+		ExitGame(data, TRUE);
+		int connectedPlayers = data->currentNumberOfPlayersConnected;
+		switch (connectedPlayers) {
+		case 0:
+			StartGame(data, GAME_DEMO);
+			break;
+		case 1:
+			StartGame(data, GAME_INDIVIDUAL);
+			break;
+		case 2:
+			StartGame(data, GAME_COMPETITIVE);
+			break;
+		default:
+			break;
+		}
+	}
+}
+
+void ExitGame(ServerAppData* data, int saveConnectedPlayers) {
+	if (data->gameStarted == FALSE) {
+		log(MSG_SERVERAPP_INFO_EXIT_GAME_NOT_STARTED);
+	}
+	else {
+		if (saveConnectedPlayers == FALSE) {
+			DisconnectAllPlayers(data);
+		}
+		data->gameIsRunning = FALSE;
+		data->gameStarted = FALSE;
+	}
+}
+
+void DisconnectAllPlayers(ServerAppData* data) {
+	log(MSG_SERVERAPP_INFO_NOT_IMPLEMENTED);
+}
+
+void DisconnectAllOperators(ServerAppData* data) {
+	//TODO: LOGIC HERE
+}
+
+void StartGame(ServerAppData* data, TCHAR* typeOfGame) {
+	if (data->gameStarted == TRUE || data->gameIsRunning == TRUE) {
+		log(MSG_SERVERAPP_INFO_START_GAME_STARTED_RUNNING);
+	}
+	else {
+		if (_tcsicmp(typeOfGame, GAME_DEMO) == 0) {
+			StartDemo(data);
+		}
+		else if (_tcsicmp(typeOfGame, GAME_INDIVIDUAL) == 0) {
+			log(MSG_SERVERAPP_INFO_NOT_IMPLEMENTED);
+		}
+		else if (_tcsicmp(typeOfGame, GAME_COMPETITIVE) == 0) {
+			log(MSG_SERVERAPP_INFO_NOT_IMPLEMENTED);
+		}
+	}
+}
+
+
+void StartDemo(ServerAppData* data) {
 	data->froggerGameboard.gameState = DEMO;
 	data->froggerGameboard.level = 1;
 	data->froggerGameboard.score = 0;
@@ -553,7 +668,7 @@ void CreateDemoGame(ServerAppData* data) {
 		data->froggerGameboard.lane[i].y = i;
 	}
 	//STREET LANES
-	for (int i = STARTLINE_DEFAULT; i < STARTLINE_DEFAULT+data->initialNumberOfLanes; i++) {
+	for (int i = STARTLINE_DEFAULT; i < STARTLINE_DEFAULT + data->initialNumberOfLanes; i++) {
 		data->froggerGameboard.lane[i].lane = STREET;
 		data->froggerGameboard.lane[i].y = i;
 	}
@@ -562,10 +677,10 @@ void CreateDemoGame(ServerAppData* data) {
 		data->froggerGameboard.lane[i].lane = FINISH;
 		data->froggerGameboard.lane[i].y = i;
 	}
-	
+
 	//FIRST FROG
 	data->froggerGameboard.frog[0].lives = 1;
-	_tcscpy_s(data->froggerGameboard.frog[0].playerName,_countof(data->froggerGameboard.frog[0].playerName), PLAYER1);
+	_tcscpy_s(data->froggerGameboard.frog[0].playerName, _countof(data->froggerGameboard.frog[0].playerName), PLAYER1);
 	data->froggerGameboard.frog[0].x = 0;
 	data->froggerGameboard.frog[0].y = 0;
 
@@ -579,7 +694,7 @@ void CreateDemoGame(ServerAppData* data) {
 	int index = 0;
 	for (int i = STARTLINE_DEFAULT; i < STARTLINE_DEFAULT + data->initialNumberOfLanes; i++) {
 		for (int j = 0; j < data->froggerGameboard.num_cars; j++) {
-			index = ((i-STARTLINE_DEFAULT) * data->froggerGameboard.num_cars) + j;
+			index = ((i - STARTLINE_DEFAULT) * data->froggerGameboard.num_cars) + j;
 			data->froggerGameboard.cars[index].speed = data->initialSpeed;
 			data->froggerGameboard.cars[index].x = i;
 			data->froggerGameboard.cars[index].y = j;
@@ -589,12 +704,14 @@ void CreateDemoGame(ServerAppData* data) {
 	//OBSTACLES
 	for (int i = STARTLINE_DEFAULT; i < STARTLINE_DEFAULT + data->initialNumberOfLanes; i++) {
 		for (int j = data->froggerGameboard.num_cars; j < data->froggerGameboard.num_cars + data->froggerGameboard.num_obstacles; j++) {
-			index = ((i- STARTLINE_DEFAULT) * data->froggerGameboard.num_obstacles) + j- data->froggerGameboard.num_cars;
+			index = ((i - STARTLINE_DEFAULT) * data->froggerGameboard.num_obstacles) + j - data->froggerGameboard.num_cars;
 			data->froggerGameboard.obstacle[index].x = i;
 			data->froggerGameboard.obstacle[index].y = j;
 		}
 	}
+	//TODO LOGIC HERE
 }
+
 
 /// <summary>
 /// Thread responsable to Consume the Operator and Client Apps
@@ -611,6 +728,8 @@ DWORD WINAPI ThreadConsume(ServerAppData* data) {}
 /// <returns></returns>
 int close_serverapp(int errorCode, ServerAppData* data) {
 	log(MSG_SERVERAPP_TITLE_EXIT);
+	DisconnectAllPlayers(data);
+	DisconnectAllOperators(data);
 	switch (errorCode) {
 	case SUCCESS:
 		log(MSG_SERVERAPP_INFO_CLOSE_SUCCESS);
@@ -648,6 +767,10 @@ int close_serverapp(int errorCode, ServerAppData* data) {
 		break;
 	case ERROR_CANT_SET_KEY:
 		log(MSG_SERVERAPP_ERROR_CANT_SET_KEY);
+		break;
+	case ERROR_SUCCESS_COMMAND_QUIT:
+		//TODO CLOSE ALL THE STUFF
+		log(MSG_SERVERAPP_INFO_CLOSE_SUCCESS);
 		break;
 	default:
 		break;
