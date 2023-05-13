@@ -92,7 +92,7 @@ void generalFroggerThreadFunction(ServerData* s) {
 	
 	HANDLE hFroggerThread[/*clientsConnected a participar + 1*/1];
 
-	if (createThread(hFroggerThread[0], handleOperatorCommands, p)) {
+	if (createThread(hFroggerThread[0], handleOperatorCommands, NULL/*parameter*/)) {
 		_tprintf(_T("Error creating operator handling thread"));
 		return -5;
 	}
@@ -131,6 +131,10 @@ void setGameData(GameInfo* g, int level, int speed, int lanes) {
 	}
 		
 	// 
+}
+
+void handleOperatorCommands() {
+
 }
 
 DWORD WINAPI handleCommunication(LPVOID p) {
