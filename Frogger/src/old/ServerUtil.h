@@ -7,6 +7,7 @@
 
 typedef struct {
 	HANDLE hMutex;
+	HANDLE hThreads[2];
 	int isInitialNumberOfLanesFromArgs;
 	int initialNumberOfLanesFromArgsValuePosition;
 	int isInitialNumberOfLanesValueFromArgsValid;
@@ -16,6 +17,9 @@ typedef struct {
 	int initialSpeedFromArgsValuePosition;
 	int initialSpeed;
 	int currentNumberOfPlayersConnected;
+	// FroggerGameboard froggerGameboard;
+	int gameStarted;
+	int gameIsRunning;
 } ServerAppData;
 
 typedef struct {
@@ -41,5 +45,11 @@ void set_initial_number_of_lanes_from_registry(ServerAppData* data);
 void save_initial_number_of_lanes_to_registry(ServerAppData* data);
 
 int close_serverapp(int errorCode, ServerAppData* data);
+
+void initialize_threads(ServerAppData* data);
+DWORD WINAPI ThreadCommands(ServerAppData* data);
+DWORD WINAPI ThreadConsume(ServerAppData* data);
+
+void CreateDemoGame(ServerAppData* data);
 
 #endif

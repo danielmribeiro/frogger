@@ -1,0 +1,7 @@
+﻿  Server.c
+C:\Users\guilh\Projects\Frogger\Frogger\src\FroggerDLL.h(9,1): warning C4091: ' __declspec(dllexport)': ignored on left of 'int' when no variable is declared
+C:\Users\guilh\Projects\Frogger\Frogger\src\FroggerDLL.h(10,1): warning C4091: ' __declspec(dllexport)': ignored on left of 'int' when no variable is declared
+C:\Users\guilh\Projects\Frogger\Frogger\src\FroggerDLL.h(11,1): warning C4091: ' __declspec(dllexport)': ignored on left of 'int' when no variable is declared
+C:\Users\guilh\Projects\Frogger\Frogger\src\FroggerDLL.h(12,1): warning C4091: ' __declspec(dllexport)': ignored on left of 'int' when no variable is declared
+C:\Users\guilh\Projects\Frogger\Frogger\src\FroggerDLL.h(13,1): warning C4091: ' __declspec(dllexport)': ignored on left of 'int' when no variable is declared
+  Server.vcxproj -> C:\Users\guilh\Projects\Frogger\Frogger\x64\Debug\Server.exe

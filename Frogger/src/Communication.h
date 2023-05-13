@@ -14,7 +14,7 @@ typedef struct {
 	int x;
 	int y;
 	int lives;
-	TCHAR playerName;
+	TCHAR playerName[128];
 } Frog;
 
 typedef struct {
