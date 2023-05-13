@@ -12,6 +12,7 @@ typedef struct {
 } ServerData;
 
 void initServerData(ServerData* s);
+bool initMemoryDLL(HINSTANCE* h);
 bool isProgramUnique(HANDLE* hMutex, LPCSTR filename);
 void readArguments(ServerData* s, int size, TCHAR* args[]);
 bool handleRegistry(ServerData* s);

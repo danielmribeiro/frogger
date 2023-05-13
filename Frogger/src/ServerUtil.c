@@ -21,6 +21,13 @@ void readArguments(ServerData* s, int size, TCHAR* args[]) {
 	}
 }
 
+bool initMemoryDLL(HINSTANCE* h) {
+	if (!(h = LoadLibrary(_T("Memory.dll"))))
+		return false;
+
+	return true;
+}
+
 void initServerData(ServerData* s) {
 	s->hMutex = NULL;
 	s->speed = -1;
@@ -48,14 +55,14 @@ bool handleRegistry(ServerData* s) {
 		}
 	}
 
-	if(s->speed == -1) {
+	if (s->speed == -1) {
 		if (readValueFromRegistryKey(hKey, SPEED_KEY_NAME, &(s->speed)) != ERROR_SUCCESS) {
 			RegCloseKey(hKey);
 			return false;
 		}
 	}
 
-	if(s->lanes == -1) {
+	if (s->lanes == -1) {
 		if (readValueFromRegistryKey(hKey, LANES_KEY_NAME, &(s->lanes)) != ERROR_SUCCESS) {
 			RegCloseKey(hKey);
 			return false;

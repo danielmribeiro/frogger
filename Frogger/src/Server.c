@@ -20,23 +20,22 @@ int _tmain(int argc, TCHAR* argv[]) {
 	}
 
 	// Initialize memory DLL
-	TCHAR * pathDLL = _T("Memory.dll");
-	hLib = LoadLibrary(pathDLL);
-
-	if (hLib == NULL) {
-		_ftprintf_s(stderr, TEXT("Erro a carregar a DLL!\n"));
-		return 0;
+	if (!initMemoryDLL(&hLib)) {
+		_tprintf(_T("Error loading memory DLL!\n"));
+		return -2;
 	}
 
 	// Get arguments from command arguments
 	readArguments(&serverData, argc, argv);
-	if (!handleRegistry(&serverData))
-		return -2;
+	if (!handleRegistry(&serverData)) {
+		_tprintf(_T("Error handling game registry keys"));
+		return -3;
+	}
 
 	// TODO Create shared memory for serverData memory
 	if (!(serverMemory = createSharedMemory(SERVER_MEMORY, sizeof(ServerMemoryData)))) {
 		_tprintf(_T("Error creating shared memory file! Shutting down..."));
-		return -3;
+		return -4;
 	}
 
 	// TODO  Initialize threads for communication and commands
