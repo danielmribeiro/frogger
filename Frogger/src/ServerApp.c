@@ -1,32 +1,24 @@
 #include "ServerApp.h"
 
 int _tmain(int argc, TCHAR *argv[]) {
+	ServerAppData data;
 
-#ifdef UNICODE
-	_setmode(_fileno(stdin), _O_WTEXT);
-	_setmode(_fileno(stdout), _O_WTEXT);
-	_setmode(_fileno(stderr), _O_WTEXT);
-#endif 
+	setUnicode();
 
 	//WELCOME
 	log(MSG_SERVERAPP_TITLE_FROGGER);
 	
-	ServerAppData data;
+	// Arguments handler
 	fill_default_serverappdata(&data);
-
-	//CHECK SINGLE INSTANCE RUNNING
 	check_single_instance(&data);
-
-	//INITIALIZE VARIABLES
 	initialize_variables(argc, argv, &data);
-
-	//LIST SPEED AND NUMBER OF LANES
 	_tprintf(_T("\n\nSpeed - %d\nNumber Of Lanes - %d\n\n"), data.initialSpeed, data.initialNumberOfLanes);
 	
-	SharedMemoryHandle sh = CreateSharedMemory("belele", (size_t)20);
-	_tprintf(_T("%p", sh));
+	// Create shared memory
+	SharedMemoryHandle sh = CreateSharedMemory(FROGGER_SERVER_MEMORY, sizeof(ServerMemoryData));
 
-	_gettchar();
+	// Create server thread for communication
+	(void)_gettchar();
 
 	//CLOSE SERVER
 	close_serverapp(SUCCESS, &data);

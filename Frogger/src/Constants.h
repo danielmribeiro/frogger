@@ -1,6 +1,27 @@
 #ifndef _CONSTANTS_H_
 #define _CONSTANTS_H_
 
+typedef enum {
+	OFF,
+	DEMO,
+	INDIVIDUAL,
+	COMPETITIVE
+} GameState;
+
+typedef enum {
+	START,
+	STREET,
+	FINISH
+} LaneType;
+
+typedef enum {
+	RIGHT,
+	LEFT,
+	FRONT,
+	BACK,
+	STOP
+} Direction;
+
 //TITLE MESSAGES
 #define MSG_SERVERAPP_TITLE_FROGGER _T("\n::::::: FROGGER - ServerApp :::::::")
 #define MSG_SERVERAPP_TITLE_CHECK_SINGLE_INSTANCE _T("\n------- CHECK SINGLE INSTANCE -------")
@@ -63,6 +84,7 @@
 #define ERROR_CANT_SET_KEY 10
 
 //MUTEX
+#define FROGGER_SERVER_MEMORY _T("SERVER_DATA")
 #define FROGGER_SERVERAPP_ONLINE _T("FROGGER_SERVERAPP_ONLINE")
 
 //REGISTRY

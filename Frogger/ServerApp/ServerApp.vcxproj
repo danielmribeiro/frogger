@@ -28,6 +28,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\Base.h" />
+    <ClInclude Include="..\src\Communication.h" />
     <ClInclude Include="..\src\Constants.h" />
     <ClInclude Include="..\src\ServerApp.h" />
     <ClInclude Include="..\src\ServerUtil.h" />

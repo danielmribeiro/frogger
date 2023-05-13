@@ -2,5 +2,5 @@
 #define _SERVERAPP_H_
 #include "Base.h"
 #include "ServerUtil.h"
-#include "FroggerDLL.h"
+#include "Communication.h"
 #endif

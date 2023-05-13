@@ -1,9 +1,7 @@
 #ifndef _FROGGERDLL_H_
 #define _FROGGERDLL_H_
 
-#include <Windows.h>
-#include <stdbool.h>
-#include <stddef.h>
+#include "Base.h"
 
 #define EXPORT __declspec(dllexport);
 typedef void* SharedMemoryHandle;
