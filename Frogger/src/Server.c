@@ -40,6 +40,7 @@ int _tmain(int argc, TCHAR* argv[]) {
 
 	// TODO  Initialize threads for communication and commands
 
+
 	(void)_gettchar();
 
 	// TODO Close server app (Give warning for clients to shutdown, close handles and free all memory)
