@@ -72,3 +72,41 @@ bool handleRegistry(ServerData* s) {
 	RegCloseKey(hKey);
 	return true;
 }
+
+bool createThread(HANDLE* h, DWORD WINAPI f, LPVOID ptrData) {
+	h = CreateThread(NULL,
+		0,
+		f,
+		ptrData,
+		0,
+		NULL);
+
+	if (!h) return false;
+	return true;
+}
+
+// TODO add difficulty increase due to changing level
+void setGameData(GameInfo* g, int level, int speed, int lanes) {
+	g->level = level;
+	g->lanes = lanes;
+	g->speed = speed;
+
+	// Init cars
+	for (int i = 0; i < 10; i++) {
+		g->numCars[i] = 0;
+
+		for (int j = 0; j < 8; j++) {
+			g->cars[i][j].pos.x = -1;
+			g->cars[i][j].pos.y = -1;
+		}
+	}
+		
+	// 
+}
+
+DWORD WINAPI handleCommunication(LPVOID p) {
+	ServerData* s = (ServerData*)p;
+
+	// Generate game data
+	
+}

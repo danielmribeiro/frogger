@@ -6,7 +6,6 @@ int _tmain(int argc, TCHAR* argv[]) {
 	(void)_setmode(_fileno(stderr), _O_WTEXT);
 
 	ServerData serverData;
-	ServerMemoryData serverMemoryData;
 	HINSTANCE hLib = NULL;
 	HANDLE* serverMemory = NULL;
 
@@ -33,13 +32,18 @@ int _tmain(int argc, TCHAR* argv[]) {
 	}
 
 	// TODO Create shared memory for serverData memory
-	if (!(serverMemory = createSharedMemory(SERVER_MEMORY, sizeof(ServerMemoryData)))) {
+	if (!(serverMemory = createSharedMemory(SERVER_MEMORY, sizeof(GameInfo)))) {
 		_tprintf(_T("Error creating shared memory file! Shutting down..."));
 		return -4;
 	}
 
 	// TODO  Initialize threads for communication and commands
-
+	/*
+		if (createThread(&serverData.hThread, serverData)) {
+		_tprintf(_T("Error creating communication"));
+		return -5;
+	}
+	*/
 
 	(void)_gettchar();
 

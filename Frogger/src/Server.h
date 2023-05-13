@@ -3,7 +3,6 @@
 
 #include "Base.h"
 #include "Constants.h"
-#include "Communication.h"
 #include "ServerUtil.h"
 #include "Memory.h"
 

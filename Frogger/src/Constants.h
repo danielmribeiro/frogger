@@ -25,11 +25,6 @@ typedef enum {
 	STOP
 } Direction;
 
-//LOGIC
-#define TRUE 1
-#define FALSE 0
-
-
 //ERRORS
 #define SUCCESS 0
 #define ERROR_MULTIPLE_INSTANCES_RUNNING 1
@@ -90,7 +85,6 @@ typedef enum {
 #define GAME_COMPETITIVE _T("COMPETITIVE")
 
 //COMMANDS
-#define SIZEOF_SERVERCMD 128
 #define COMMAND_QUIT _T("QUIT\n")
 #define COMMAND_DEMO _T("DEMO\n")
 #define COMMAND_SUSPEND _T("SUSPEND\n")
