@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{b0f209b2-8c3b-4c57-bfd7-389f14d89d74}</ProjectGuid>
+    <ProjectGuid>{e180f380-5ec9-44f2-8cb2-11f7e07cc396}</ProjectGuid>
     <RootNamespace>Server</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -104,10 +104,12 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)$(Platform)\src;$(SolutionDir)$(Platform)\$(Configuration)\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>$(SolutionDir)$(Platform)\$(Configuration)\Memory.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -127,15 +129,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\Server.c" />
-    <ClCompile Include="..\src\ServerUtil.c" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="..\src\Base.h" />
     <ClInclude Include="..\src\Communication.h" />
     <ClInclude Include="..\src\Constants.h" />
     <ClInclude Include="..\src\Server.h" />
     <ClInclude Include="..\src\ServerUtil.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\Server.c" />
+    <ClCompile Include="..\src\ServerUtil.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

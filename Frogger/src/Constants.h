@@ -2,6 +2,7 @@
 #define _CONSTANTS_H_
 
 #define SERVER_MUTEX _T("SERVER_MUTEX")
+#define SERVER_MEMORY _T("SERVER_MEMORY")
 
 typedef enum {
 	OFF,

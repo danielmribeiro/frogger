@@ -3,7 +3,7 @@
 
 #include "Base.h"
 #include "Constants.h"
-#include "FroggerDLL.h"
+#include "Memory.h"
 
 typedef struct {
 	int y;
