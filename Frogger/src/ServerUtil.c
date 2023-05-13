@@ -27,7 +27,8 @@ void initServerData(ServerData* s) {
 	s->lanes = -1;
 }
 
-LSTATUS createRegistryKey(TCHAR * keyPath, HANDLE* hKey, DWORD* res) {
+LSTATUS createRegistryKey(TCHAR * keyPath, HANDLE* hKey) {
+	DWORD res;
 	return RegCreateKeyEx(HKEY_CURRENT_USER,
 		keyPath,
 		0,
@@ -36,7 +37,7 @@ LSTATUS createRegistryKey(TCHAR * keyPath, HANDLE* hKey, DWORD* res) {
 		KEY_ALL_ACCESS,
 		NULL,
 		hKey,
-		res);
+		&res);
 }
 
 LSTATUS openRegistryKey(TCHAR * keyPath, HANDLE* hKey) {
@@ -69,12 +70,10 @@ LSTATUS saveValueToRegistryKey(HANDLE hKey, TCHAR * keyName, DWORD keyValue) {
 
 bool handleRegistry(ServerData* s) {
 	HANDLE hKey = NULL;
-	DWORD res, defaultSize;
-	DWORD value;
-	DWORD size = sizeof(value);
+	DWORD res;
 
 	if (openRegistryKey(KEYPATH, &hKey) != ERROR_SUCCESS)
-		if (createRegistryKey(KEYPATH, &hKey, &res) != ERROR_SUCCESS) {
+		if (createRegistryKey(KEYPATH, &hKey) != ERROR_SUCCESS) {
 			RegCloseKey(hKey);
 			return false;
 		}

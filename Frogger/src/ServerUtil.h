@@ -6,7 +6,6 @@
 
 typedef struct {
 	HANDLE hMutex;
-
 	int speed;
 	int lanes;
 } ServerData;

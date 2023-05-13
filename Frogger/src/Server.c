@@ -19,12 +19,6 @@ int _tmain(int argc, TCHAR* argv[]) {
 	if (!handleRegistry(&serverData))
 		return -2;
 
-	// TODO When arguments are passed, create registry keys for those values
-
-	// TODO If no arguments are passed, read from registry keys.
-
-	// TODO If none shutdown
-
 	// TODO Create shared memory for serverData memory
 
 	// TODO  Initialize threads for communication and commands
