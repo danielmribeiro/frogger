@@ -28,10 +28,23 @@ bool initMemoryDLL(HINSTANCE* h) {
 	return true;
 }
 
-void initServerData(ServerData* s) {
+bool initServerData(ServerData* s) {
 	s->hMutex = NULL;
+	s->hMutexStop = NULL;
 	s->speed = -1;
 	s->lanes = -1;
+
+	if (!(s->hMutexStop = CreateMutex(NULL, FALSE, SERVER_GAME_MUTEX))) {
+		_tprintf(_T("Error creating mutex. Shutting down"));
+		return false;
+	}
+
+	if (!(s->hMutex = CreateMutex(NULL, FALSE, SERVER_MEMORY_MUTEX))) {
+		_tprintf(_T("Error creating mutex. Shutting down"));
+		return false;
+	}
+
+	return true;
 }
 
 bool handleRegistry(ServerData* s) {
@@ -73,45 +86,35 @@ bool handleRegistry(ServerData* s) {
 	return true;
 }
 
-bool createThread(HANDLE* h, DWORD WINAPI f, LPVOID ptrData) {
-	h = CreateThread(NULL,
+bool createThread(HANDLE * h, LPTHREAD_START_ROUTINE f, LPVOID ptrData) {
+	*h = CreateThread(NULL,
 		0,
 		f,
 		ptrData,
 		0,
 		NULL);
 
-	if (!h) return false;
+	if (*h == NULL) return false;
 	return true;
 }
 
-void generalFroggerThreadFunction(ServerData* s) {
-	//TODO start clients listener and wait for Single Object [clientsConnected = function Result] This ends when the server gets a connection that asks the game to start
-	int clientsConnected = 0; //Temporary Meta 1
-	//TODO create gameboard(clientsConnected, typeofgame (because 2 connected = 1comp || 2 connected = 1indiv + 1waiting))
-	
-	HANDLE hFroggerThread[/*clientsConnected a participar + 1*/1];
 
-	if (createThread(hFroggerThread[0], handleOperatorCommands, NULL/*parameter*/)) {
-		_tprintf(_T("Error creating operator handling thread"));
-		return -5;
-	}
+int getRandomValue(int max) {
+	srand(time(NULL));
+	return rand() % (max + 1);
+}
 
-	/* If... clients connected & participate in the game
-	
-	if (createThread(hFroggerThread[1], f, p)) {
-		_tprintf(_T("Error creating client1 handling thread"));
-		return -5;
-	}
+bool isPositionEmpty(GameInfo* g, int x, int y) {
+	// Cars
+	for (int i = 0; i < MAX_LANES; i++)
+		for (int j = 0; j < MAX_CARS; j++)
+			if (g->cars[i][j].pos.x == x &&
+				g->cars[i][j].pos.y == y)
+				return false;
 
-	if (createThread(hFroggerThread[2], f, p)) {
-		_tprintf(_T("Error creating client2 handling thread"));
-		return -5;
-	}
-	*/
+	// TODO Obstacules
 
-	WaitForMultipleObjects(/*clientsConnected a participar +1*/1, hFroggerThread, TRUE, INFINITE);
-	
+	return true;
 }
 
 // TODO add difficulty increase due to changing level
@@ -122,26 +125,31 @@ void setGameData(GameInfo* g, int level, int speed, int lanes) {
 
 	// Init cars
 	for (int i = 0; i < 10; i++) {
-		g->numCars[i] = 0;
+		g->numCars[i] = 1; // TODO difficulty change here
 
-		for (int j = 0; j < 8; j++) {
-			g->cars[i][j].pos.x = -1;
-			g->cars[i][j].pos.y = -1;
+		for (int j = 0, x = -1, y = -1; j < 8; j++) {
+			do {
+				x = getRandomValue(19);
+				y = getRandomValue(19);
+			} while (!isPositionEmpty(g, x, y));
+
+			g->cars[i][j].pos.x = x;
+			g->cars[i][j].pos.y = y;
 		}
 	}
-		
-	// 
 }
 
-void handleOperatorCommands() {
-
-}
-
-DWORD WINAPI handleCommunication(LPVOID p) {
+DWORD WINAPI handleGame(LPVOID p) {
 	ServerData* s = (ServerData*)p;
 
 	// Generate game data
-	
+	setGameData(&(s->g), 0, s->speed, s->lanes);
+
+	// Game loop
+	while (!s->status && WaitForSingleObject(s->hMutexStop, INFINITE)) {
+		// Move cars
+
+	}
 }
 
 

@@ -44,20 +44,33 @@ typedef struct {
 	int x, y;
 } Position;
 
-typedef struct {
-	Position pos;
-} Car;
+typedef enum {
+	RIGHT,
+	LEFT,
+	FRONT,
+	BACK
+} Direction;
 
 typedef struct {
-	int level, lanes, speed, numCars[10];
-	Car cars[10][8];
+	Position pos;
+	Direction dir;
+} Car;
+
+#define MAX_LANES 10
+#define MAX_CARS 8
+
+typedef struct {
+	int level, lanes, speed, numCars[MAX_LANES];
+	Car cars[MAX_LANES][MAX_CARS];
 } GameInfo;
 
 typedef struct {
-	HANDLE hMutex, hThread, hMemory;
+	HANDLE hMutex, hThread, hMemory, hMutexStop;
 	GameInfo g;
-	int clients, speed, lanes;
+	int clients, speed, lanes, status;
+	// STATUS: RUN = 0, EXIT = 1
 } ServerData;
+
 
 
 void initServerData(ServerData* s);
@@ -65,9 +78,11 @@ bool initMemoryDLL(HINSTANCE* h);
 bool isProgramUnique(HANDLE* hMutex, LPCSTR filename);
 void readArguments(ServerData* s, int size, TCHAR* args[]);
 bool handleRegistry(ServerData* s);
-bool createThread(HANDLE* h, DWORD WINAPI f, LPVOID ptrData)
+bool createThread(HANDLE* h, LPTHREAD_START_ROUTINE f, LPVOID ptrData);
 
 
-void generalFroggerThreadFunction(ServerData* s);
+
+DWORD WINAPI handleGame(LPVOID p);
+
 
 #endif

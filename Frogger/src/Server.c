@@ -37,13 +37,15 @@ int _tmain(int argc, TCHAR* argv[]) {
 		return -4;
 	}
 
-	// TODO  Initialize threads for communication and commands
-	if (createThread(&serverData.hThread, generalFroggerThreadFunction, &serverData)) {
-		_tprintf(_T("Error creating communication"));
+	// TODO Initialize thread for game handler
+	if (!createThread(&(serverData.hThread), handleGame, &serverData)) {
+		_tprintf(_T("Error creating game handler thread"));
 		return -5;
 	}
 
-	(void)_gettchar();
+	// TODO Commands Handler
+
+	WaitForSingleObject(serverData.hThread, INFINITE);
 
 	// TODO Close server app (Give warning for clients to shutdown, close handles and free all memory)
 }

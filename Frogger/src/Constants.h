@@ -3,6 +3,8 @@
 
 #define SERVER_MUTEX _T("SERVER_MUTEX")
 #define SERVER_MEMORY _T("SERVER_MEMORY")
+#define SERVER_GAME_MUTEX _T("SERVER_GAME_MUTEX")
+#define SERVER_MEMORY_MUTEX _T("SERVER_MEMORY_MUTEX")
 
 typedef enum {
 	OFF,
@@ -10,20 +12,6 @@ typedef enum {
 	INDIVIDUAL,
 	COMPETITIVE
 } GameState;
-
-typedef enum {
-	START,
-	STREET,
-	FINISH
-} LaneType;
-
-typedef enum {
-	RIGHT,
-	LEFT,
-	FRONT,
-	BACK,
-	STOP
-} Direction;
 
 //ERRORS
 #define SUCCESS 0
@@ -55,14 +43,6 @@ typedef enum {
 #define STARTLINE_DEFAULT 1
 #define FINISHLINE_DEFAULT 1
 #define LANES_MAX (STARTLINE_DEFAULT+NUMBER_OF_LANES_MAX+FINISHLINE_DEFAULT)
-
-//NUMBER OF COLUMNS IN THE LANES
-#define LANES_LENGTH 20
-
-//CARS
-#define CARS_MIN 0
-#define CARS_MAX (LANES_LENGTH*LANES_MAX)
-#define CARS_DEFAULT CARS_MIN
 
 //FROGS
 #define FROGS_MAX 2
