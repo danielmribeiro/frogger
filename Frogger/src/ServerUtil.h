@@ -3,6 +3,7 @@
 
 #include "Base.h"
 #include "Constants.h"
+#include "Registry.h"
 
 typedef struct {
 	HANDLE hMutex;

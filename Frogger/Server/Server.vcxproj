@@ -132,10 +132,12 @@
     <ClInclude Include="..\src\Base.h" />
     <ClInclude Include="..\src\Communication.h" />
     <ClInclude Include="..\src\Constants.h" />
+    <ClInclude Include="..\src\Registry.h" />
     <ClInclude Include="..\src\Server.h" />
     <ClInclude Include="..\src\ServerUtil.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\Registry.c" />
     <ClCompile Include="..\src\Server.c" />
     <ClCompile Include="..\src\ServerUtil.c" />
   </ItemGroup>
