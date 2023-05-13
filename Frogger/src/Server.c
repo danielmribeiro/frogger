@@ -1,8 +1,5 @@
 #include "Server.h"
 
-void handleRegistry(ServerData* s) {
-}
-
 int _tmain(int argc, TCHAR* argv[]) {
 	(void)_setmode(_fileno(stdin), _O_WTEXT);
 	(void)_setmode(_fileno(stdout), _O_WTEXT);
@@ -19,7 +16,8 @@ int _tmain(int argc, TCHAR* argv[]) {
 
 	// TODO Get arguments from command arguments
 	readArguments(&serverData, argc, argv);
-	handleRegistry(&serverData);
+	if (!handleRegistry(&serverData))
+		return -2;
 
 	// TODO When arguments are passed, create registry keys for those values
 

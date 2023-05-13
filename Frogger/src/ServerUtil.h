@@ -2,6 +2,7 @@
 #define _SERVER_UTIL_H_
 
 #include "Base.h"
+#include "Constants.h"
 
 typedef struct {
 	HANDLE hMutex;
@@ -13,5 +14,6 @@ typedef struct {
 void initServerData(ServerData* s);
 bool isProgramUnique(HANDLE* hMutex, LPCSTR filename);
 void readArguments(ServerData* s, int size, TCHAR* args[]);
+bool handleRegistry(ServerData* s);
 
 #endif

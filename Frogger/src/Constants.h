@@ -44,9 +44,9 @@ typedef enum {
 #define ERROR_SUCCESS_COMMAND_QUIT 11
 
 //REGISTRY
-#define KEYPATH_NAME _T("SOFTWARE\\Frogger\\")
+#define KEYPATH _T("SOFTWARE\\Frogger\\")
 #define SPEED_KEY_NAME _T("SPEED")
-#define NUMBER_OF_LANES_KEY_NAME _T("NUMBEROFLANES")
+#define LANES_KEY_NAME _T("NUMBEROFLANES")
 
 // SERVER DATA
 #define SPEED_MIN 5
