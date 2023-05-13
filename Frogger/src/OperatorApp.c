@@ -5,12 +5,7 @@ void check_serverapp_instance();
 int close_operatorapp(int errorCode);
 
 int _tmain(int argc, TCHAR* argv[]) {
-
-#ifdef UNICODE
-	_setmode(_fileno(stdin), _O_WTEXT);
-	_setmode(_fileno(stdout), _O_WTEXT);
-	_setmode(_fileno(stderr), _O_WTEXT);
-#endif 
+	setUnicode();
 
 	//WELCOME
 	log(MSG_OPERATORAPP_TITLE_FROGGER);

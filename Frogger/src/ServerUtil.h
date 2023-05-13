@@ -18,57 +18,6 @@ typedef struct {
 	int currentNumberOfPlayersConnected;
 } ServerAppData;
 
-typedef enum {
-	OFF,
-	DEMO,
-	INDIVIDUAL,
-	COMPETITIVE
-} GameState;
-
-typedef enum {
-	START,
-	STREET,
-	FINISH
-} LaneType;
-
-typedef struct {
-	GameState gameState;
-	int level;
-	int score;
-	int num_lanes;
-	int num_lanes_length;
-	int num_frogs;
-	int num_cars;
-	int num_obstacles;
-	struct Lane {
-		int y;
-		LaneType lane;
-	} lanes[LANES_MAX];
-	struct Frog {
-		int x;
-		int y;
-		int lives;
-		TCHAR playerName;
-	} frogs[FROGS_MAX];
-	struct Car {
-		int x;
-		int y;
-		int speed;
-	}cars[CARS_MAX];
-	struct Obstacle {
-		int x;
-		int y;
-	} obstacle[OBSTACLES_MAX];
-} FroggerGameboard;
-
-typedef enum {
-	RIGHT,
-	LEFT,
-	FRONT,
-	BACK,
-	STOP
-} Direction;
-
 typedef struct {
 	TCHAR playerName;
 	Direction lastMove;
