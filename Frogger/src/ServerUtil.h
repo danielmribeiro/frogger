@@ -65,6 +65,9 @@ bool initMemoryDLL(HINSTANCE* h);
 bool isProgramUnique(HANDLE* hMutex, LPCSTR filename);
 void readArguments(ServerData* s, int size, TCHAR* args[]);
 bool handleRegistry(ServerData* s);
-bool createThread(HANDLE* h, DWORD WINAPI f, LPVOID ptrData);
+bool createThread(HANDLE* h, DWORD WINAPI f, LPVOID ptrData)
+
+
+void generalFroggerThreadFunction(ServerData* s);
 
 #endif

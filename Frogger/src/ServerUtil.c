@@ -85,6 +85,35 @@ bool createThread(HANDLE* h, DWORD WINAPI f, LPVOID ptrData) {
 	return true;
 }
 
+void generalFroggerThreadFunction(ServerData* s) {
+	//TODO start clients listener and wait for Single Object [clientsConnected = function Result] This ends when the server gets a connection that asks the game to start
+	int clientsConnected = 0; //Temporary Meta 1
+	//TODO create gameboard(clientsConnected, typeofgame (because 2 connected = 1comp || 2 connected = 1indiv + 1waiting))
+	
+	HANDLE hFroggerThread[/*clientsConnected a participar + 1*/1];
+
+	if (createThread(hFroggerThread[0], handleOperatorCommands, p)) {
+		_tprintf(_T("Error creating operator handling thread"));
+		return -5;
+	}
+
+	/* If... clients connected & participate in the game
+	
+	if (createThread(hFroggerThread[1], f, p)) {
+		_tprintf(_T("Error creating client1 handling thread"));
+		return -5;
+	}
+
+	if (createThread(hFroggerThread[2], f, p)) {
+		_tprintf(_T("Error creating client2 handling thread"));
+		return -5;
+	}
+	*/
+
+	WaitForMultipleObjects(/*clientsConnected a participar +1*/1, hFroggerThread, TRUE, INFINITE);
+	
+}
+
 // TODO add difficulty increase due to changing level
 void setGameData(GameInfo* g, int level, int speed, int lanes) {
 	g->level = level;
@@ -110,3 +139,40 @@ DWORD WINAPI handleCommunication(LPVOID p) {
 	// Generate game data
 	
 }
+
+
+//INICEI O SERVIDOR
+//TRATEI TUDO DIREITINHO
+
+//-----THREAD DO MAIN-----WHILE TRUE
+// COMANDOS
+
+//-----THREAD #1 -----------WHILE TRUE
+//ESTOU À ESPERA DE CLIENTES
+//RECEBI ORDEM PARA COMEÇAR O JOGO
+//VOU PARAR DE ESPERAR CLIENTES PARA SE JUNTAREM AO JOGO
+// ................. O QUE É QUE PRECISO DURANTE O JOGO? RECEBER ORDENS DOS CLIENTES, RECEBER ORDENS DOS OPERADORES E ENVIAR O JOGO A CADA JOGADA OU MOVIMENTAÇAO DE CARRO AO OPERADOR E AO CLIENTE...............
+// VOU CRIAR O GAMEBOARD SEGUNDO O NUMERO DE CLIENTES QUE TENHO CONECTADO
+
+							//-----#1 -> SUB-THREAD #1--------WHILE JOGO DECORRE
+							//ESTOU À ESPERA DE COMANDOS DE OPERADORES
+							// -> ATUALIZA MAPA()
+
+							// -----#1 -> SUB-THREAD #2--------WHILE JOGO DECORRE
+							// ESPERO COMANDOS DO CLIENTE 1
+							// -> ATUALIZA MAPA()
+
+							// -----#1 -> SUB-THREAD #3--------WHILE JOGO DECORRE
+							// ESPERO COMANDOS DO CLIENTE 2
+							// -> ATUALIZA MAPA()
+
+
+// WAIT FOR #1 -> SUB-THREAD #1 / SUB-THREAD #2 /SUB-THREAD #3
+
+
+
+// -----> ATUALIZA MAPA()-------
+// SEMPRE QUE UM CARRO SE MOVE OU HÁ UMA JOGADA {
+//	VOU ENVIAR O MEU GAMEBOARD PARA O CLIENTE
+//  VOU ENVIAR O MEU GAMEBOARD PARA O OPERADOR
+//}

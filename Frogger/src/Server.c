@@ -38,12 +38,10 @@ int _tmain(int argc, TCHAR* argv[]) {
 	}
 
 	// TODO  Initialize threads for communication and commands
-	/*
-		if (createThread(&serverData.hThread, serverData)) {
+	if (createThread(&serverData.hThread, generalFroggerThreadFunction, &serverData)) {
 		_tprintf(_T("Error creating communication"));
 		return -5;
 	}
-	*/
 
 	(void)_gettchar();
 
