@@ -1,32 +1,30 @@
 #include "Server.h"
 
-bool isServerUnique(HANDLE* hMutex) {
-	hMutex = CreateMutex(NULL, TRUE, FROGGER_SERVERAPP_ONLINE);
-	if (GetLastError() == ERROR_ALREADY_EXISTS) {
-		CloseHandle(hMutex);
-		return false;
-	}
-
-	return true;
+void handleRegistry(ServerData* s) {
 }
 
-typedef struct {
-	HANDLE hMutex;
-} ServerData;
-
 int _tmain(int argc, TCHAR* argv[]) {
-	ServerData serverData;
+	(void)_setmode(_fileno(stdin), _O_WTEXT);
+	(void)_setmode(_fileno(stdout), _O_WTEXT);
+	(void)_setmode(_fileno(stderr), _O_WTEXT);
 
-	setUnicode();
+	ServerData serverData;
+	initServerData(&serverData);
 
 	// TODO Check if only one server is running
-	if (!isServerUnique(&serverData.hMutex)) {
-		return -1; // ERROR
+	if (!isProgramUnique(&serverData.hMutex, SERVER_MUTEX)) {
+		_tprintf(_T("Server already running! Shutting down..."));
+		return -1;
 	}
 
 	// TODO Get arguments from command arguments
+	readArguments(&serverData, argc, argv);
+	handleRegistry(&serverData);
+
 	// TODO When arguments are passed, create registry keys for those values
+
 	// TODO If no arguments are passed, read from registry keys.
+
 	// TODO If none shutdown
 
 	// TODO Create shared memory for serverData memory

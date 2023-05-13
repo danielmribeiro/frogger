@@ -11,12 +11,5 @@
 #include <ctype.h>
 #include <stdbool.h>
 
-void setUnicode() {
-	#ifdef UNICODE
-		(void)_setmode(_fileno(stdin), _O_WTEXT);
-		(void)_setmode(_fileno(stdout), _O_WTEXT);
-		(void)_setmode(_fileno(stderr), _O_WTEXT);
-	#endif 
-}
 
 #endif
