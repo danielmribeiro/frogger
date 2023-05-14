@@ -73,6 +73,9 @@ typedef struct {
 #define COMMAND_RESUME _T("RESUME\n")
 #define COMMAND_RESTART _T("RESTART\n")
 #define COMMAND_EXIT _T("EXIT\n")
+#define COMMAND_STOP _T("STOP\n")
+#define COMMAND_INVERT _T("INVERT\n")
+#define COMMAND_INSERT _T("INSERT\n")
 
 bool initServerData(ServerData* s);
 bool initMemoryDLL(HINSTANCE* h);

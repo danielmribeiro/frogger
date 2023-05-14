@@ -1,5 +1,27 @@
 #include "Operator.h"
 
+void handleCommands() {
+	TCHAR cmd[128];
+	while (1) {
+		_fgetts(cmd, 128, stdin);
+		if (_tcsicmp(COMMAND_INSERT, cmd) == 0) {
+			//TO DO INSERT
+		}
+		else if (_tcsicmp(COMMAND_STOP, cmd) == 0) {
+			//TO DO STOP
+		}
+		else if (_tcsicmp(COMMAND_INVERT, cmd) == 0) {
+			//TO DO INVERT DIRECTION
+		}
+		else if (_tcsicmp(COMMAND_QUIT, cmd) == 0) {
+			break;
+		}
+		else {
+			_tprintf(_T("Command not found!"));
+		}
+	}
+}
+
 int _tmain(int argc, TCHAR* argv[]) {
 	ServerData s;
 	HINSTANCE hLib = NULL;
@@ -24,6 +46,8 @@ int _tmain(int argc, TCHAR* argv[]) {
 		_tprintf(_T("Error creating shared memory file! Shutting down..."));
 		return -3;
 	}
+
+	handleCommands();
 
 	// TODO Operator shutdown handler
 	FreeLibrary(hLib);
