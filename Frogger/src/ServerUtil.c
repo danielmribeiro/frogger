@@ -209,6 +209,7 @@ DWORD WINAPI handleGame(LPVOID p) {
 	while (!s->status &&
 		WaitForSingleObject(s->hMutexStop, INFINITE) == WAIT_OBJECT_0) {
 		// Move game elements
+		WaitForSingleObject(s->hMutex, INFINITE);
 		move(&(s->g));
 
 		for (int i = 0; i < MAX_LANES; i++)
@@ -218,7 +219,7 @@ DWORD WINAPI handleGame(LPVOID p) {
 					s->g.cars[i][j].pos.x,
 					s->g.cars[i][j].pos.y);
 
-		ReleaseMutex(s->hMutexStop);
+		ReleaseMutex(s->hMutex);
 		Sleep(1000);
 
 	}

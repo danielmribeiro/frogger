@@ -27,12 +27,9 @@ typedef struct {
 typedef struct {
 	int level;
 	int score;
-	int num_lanes;
-	int num_lanes_length;
 	int num_frogs;
 	int num_cars;
 	int num_obstacles;
-	Lane lanes[LANES_MAX];
 	Frog frogs[FROGS_MAX];
 	Car cars[CARS_MAX];
 	Obstacle obstacle[OBSTACLES_MAX];
