@@ -29,14 +29,14 @@ void clearConsole()
 
 DWORD WINAPI readGame(LPVOID p) {
 	ServerData* s = (ServerData*)p;
-	GameInfo* pGameInfo = (GameInfo*) getMapViewOfFile(s->hMemory, 
+	GameInfo* pGameInfo = (GameInfo*)getMapViewOfFile(s->hMemory,
 		sizeof(GameInfo));
 	if (!pGameInfo) {
 		_tprintf(_T("Error creating map view of shared memory\n"));
 		return -1;
 	}
 
-	do {
+	while (!s->g.exit) {
 		WaitForSingleObject(s->hMutex, INFINITE);
 
 		// TODO print gameboard
@@ -77,17 +77,59 @@ DWORD WINAPI readGame(LPVOID p) {
 
 		ReleaseMutex(s->hMutex);
 		Sleep(1000);
-	} while (!s->g.exit);
+	}
 
 	return 0;
 }
 
-void handleCommands() {
-	bool exit = false;
+void handleCommands(ServerData* s) {
+	CircularBufferMemory* circBufMemory = NULL;
+	CircularBuffer buf, * pBuf = NULL;
+	HANDLE* hReadSem = NULL, hWriteSem = NULL;
 	TCHAR cmd[128];
+	DWORD resSem = 0;
+	size_t size = sizeof(CircularBufferMemory);
+	bool exit = false;
+	int indexWrite = 0;
+
+	if (!(s->hCircBuf = openSharedMemory(SERVER_MEMORY_BUFFER, size))) {
+		_tprintf(_T("Error opening circular buffer shared memory file! Shutting down..."));
+			s->status = 1;
+			s->g.exit = 1;
+			return -1;
+	}
+
+	if (!(circBufMemory = getMapViewOfFile(s->hCircBuf, size))) {
+		_tprintf(_T("Error creating map view of circular buffer memory file\n"));
+		s->status = 1;
+		s->g.exit = 1;
+		return -2;
+	}
+
+	hReadSem = OpenSemaphore(SEMAPHORE_ALL_ACCESS,
+		FALSE, 
+		READ_SEMAPHORE);
+	hWriteSem = OpenSemaphore(SEMAPHORE_ALL_ACCESS,
+		FALSE, 
+		WRITE_SEMAPHORE);
+	if (!hReadSem && !hWriteSem) {
+		_tprintf(_T("Error creating semaphores\n"));
+		s->status = 1;
+		s->g.exit = 1;
+		return -3;
+	}
+
+	buf.type = -1;
+	_tcscpy_s(buf.message,
+		sizeof(_T("")), _T(""));
 
 	while (!exit) {
 		_fgetts(cmd, 128, stdin);
+
+		do {
+			resSem = WaitForSingleObject(hWriteSem, 1000);
+		} while (resSem == WAIT_TIMEOUT && !s->g.exit);
+		
 		if (_tcsicmp(COMMAND_INSERT, cmd) == 0) {
 			//TO DO INSERT
 		}
@@ -95,14 +137,28 @@ void handleCommands() {
 			//TO DO STOP
 		}
 		else if (_tcsicmp(COMMAND_INVERT, cmd) == 0) {
-			//TO DO INVERT DIRECTION
+			buf.type = INVERT_CARS;
 		}
 		else if (_tcsicmp(COMMAND_QUIT, cmd) == 0) {
 			exit = true;
 		}
 		else {
 			_tprintf(_T("Command not found!"));
+			continue;
 		}
+
+		indexWrite = circBufMemory->indexWrite;
+		pBuf = &(circBufMemory->circBuf[indexWrite]);
+
+		// Copy to circular buffer memory
+		memcpy(pBuf, &buf,sizeof(CircularBuffer));
+		circBufMemory->indexWrite++;
+
+		if (circBufMemory->indexWrite == BUF_SIZE) {
+			circBufMemory->indexWrite = 0;
+		}
+
+		ReleaseSemaphore(hReadSem, 1, NULL);
 	}
 }
 
@@ -125,12 +181,10 @@ int _tmain(int argc, TCHAR* argv[]) {
 		return -2;
 	}
 
-
 	if (!(s.hMemory = openSharedMemory(SERVER_MEMORY))) {
 		_tprintf(_T("Error creating shared memory file! Shutting down..."));
 		return -3;
 	}
-
 
 	// Create thread to read game
 	if (!createThread(&(s.hGameThread), readGame, &s)) {
@@ -138,7 +192,7 @@ int _tmain(int argc, TCHAR* argv[]) {
 		return -4;
 	}
 
-	handleCommands();
+	handleCommands(&s);
 
 	WaitForSingleObject(s.hGameThread, INFINITE);
 

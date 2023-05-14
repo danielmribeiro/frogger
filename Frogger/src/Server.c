@@ -39,22 +39,13 @@ int _tmain(int argc, TCHAR* argv[]) {
 		return -5;
 	}
 
-	// TODO Initialize thread for game handler
+	// Initialize thread for game handler
 	if (!createThread(&(serverData.hGameThread), handleGame, &serverData)) {
 		_tprintf(_T("Error creating game handler thread"));
 		return -7;
 	}
 
-	// TODO Create shared memory for circular buffer
-	/*
-	if (!(serverData.hCircBuf = createSharedMemory(SERVER_MEMORY_BUFFER, 
-		sizeof(CircularBuffer) * BUF_SIZE))) {
-		_tprintf(_T("Error creating circular buffer shared memory file! Shutting down..."));
-		return -8;
-	}
-	*/
-
-	// TODO Initialize thread for communication with operators
+	// Initialize thread for communication with operators
 	if (!createThread(&(serverData.hCommsThread), handleComms, &serverData)) {
 		_tprintf(_T("Error creating comms handler thread"));
 		// TODO stop and free everything
@@ -64,12 +55,13 @@ int _tmain(int argc, TCHAR* argv[]) {
 	// TODO Commands Handler
 	handleCommands(&serverData);
 
-	// TODO Proper shutdown server
+	// Proper shutdown server
 	WaitForSingleObject(serverData.hGameThread, INFINITE);
 	WaitForSingleObject(serverData.hCommsThread, INFINITE);
 	FreeLibrary(hLib);
 	CloseHandle(serverData.hMutex);
-	closeSharedMemory(serverData.hMemory, NULL);
+	CloseHandle(serverData.hCircBuf);
+	CloseHandle(serverData.hMemory);
 	// TODO Inform clients that client is shutting down
 
 	return 0;

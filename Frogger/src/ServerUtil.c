@@ -172,7 +172,6 @@ DWORD WINAPI handleGame(LPVOID p) {
 
 	// Game loop
 	while (!s->status) {
-		_tprintf(_T("PING\n"));
 		// Move game elements
 		WaitForSingleObject(s->hMutex, INFINITE);
 		move(&(s->g));
@@ -196,10 +195,24 @@ DWORD WINAPI handleGame(LPVOID p) {
 	return 0;
 }
 
+void invertCars(GameInfo * g) {
+	for (int i = 0; i < g->lanes; i++)
+		for (int j = 0; j < g->numCars[i]; j++)
+			if (g->cars[i][j].dir == RIGHT)
+				g->cars[i][j].dir = LEFT;
+			else
+				g->cars[i][j].dir = RIGHT;
+}
+
 DWORD WINAPI handleComms(LPVOID p) {
 	ServerData* s = (ServerData*)p;
-	CircularBuffer* circBuf = NULL;
-	size_t size = sizeof(CircularBuffer) * BUF_SIZE;
+	CircularBufferMemory * circBufMemory = NULL;
+	CircularBuffer buf, * pBuf = NULL;
+	HANDLE* hReadSem = NULL, * hWriteSem = NULL;
+
+	DWORD resSem = 0, resMutex;
+	size_t size = sizeof(CircularBufferMemory);
+	int indexWrite, indexRead;
 
 	if (!(s->hCircBuf = createSharedMemory(SERVER_MEMORY_BUFFER,
 		size))) {
@@ -208,22 +221,82 @@ DWORD WINAPI handleComms(LPVOID p) {
 		return -1;
 	}
 
-	circBuf = (CircularBuffer*)getMapViewOfFile(s->hCircBuf, size);
-	if (!circBuf) {
+	if (!(circBufMemory = (CircularBuffer*)getMapViewOfFile(s->hCircBuf, size))) {
 		_tprintf(_T("Error creating map view of circular buffer memory file\n"));
 		s->status = 1;
 		return -2;
 	}
 
+	hReadSem = CreateSemaphore(NULL,
+		0,
+		BUF_SIZE,
+		READ_SEMAPHORE);
+	hWriteSem = CreateSemaphore(NULL,
+		BUF_SIZE,
+		BUF_SIZE,
+		WRITE_SEMAPHORE);
+	if (!hReadSem && !hWriteSem) {
+		_tprintf(_T("Error creating semaphores\n"));
+		s->status = 1;
+		return -3;
+	}
+
 	// Initialize circular buffer
+	circBufMemory->indexRead = 0;
+	circBufMemory->indexWrite = 0;
 	for (int i = 0; i < BUF_SIZE; i++) {
-		circBuf[i].type = -1;
-		_tcscpy_s(circBuf[i].message, sizeof(_T("")), _T(""));
+		circBufMemory->circBuf[i].type = -1;
+		_tcscpy_s(circBufMemory->circBuf[i].message, 
+			sizeof(_T("")), _T(""));
 	}
 
 	while (!s->status) {
-		Sleep(1000);
+		do {
+			resSem = WaitForSingleObject(hReadSem, 1000);
+			
+		} while (resSem == WAIT_TIMEOUT && !s->status);
+
+		WaitForSingleObject(s->hMutex, 1000);
+
+		if (s->status) break;
+	
+		// TODO circularBuffer read handler
+		indexRead = circBufMemory->indexRead++;
+		pBuf = &(circBufMemory->circBuf[indexRead]);
+		memcpy(&buf, pBuf, sizeof(CircularBuffer));
+
+		_tprintf(_T("Got message\nType: %d\nMsg: %s\n"), 
+			buf.type,
+			buf.message);
+
+		switch (buf.type) {
+		case(STOP_CARS):
+			_tprintf(_T("Implement stop cars\n"));
+
+			break;
+		
+		case(INVERT_CARS):
+			invertCars(&(s->g));
+			break;
+
+		case(INSERT_OBSTACLE):
+			// TODO
+			_tprintf(_T("Implement insert obstacle\n"));
+			break;
+
+		default: 
+			break;
+		}
+
+		if (circBufMemory->indexRead == BUF_SIZE) {
+			circBufMemory->indexRead = 0;
+		}
+
+		ReleaseMutex(s->hMutex);
+		ReleaseSemaphore(hWriteSem, 1, NULL);
 	}
+
+	UnmapViewOfFile(circBufMemory);
 
 	return 0;
 }
