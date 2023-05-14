@@ -90,9 +90,9 @@ int _tmain(int argc, TCHAR* argv[]) {
 		return -4;
 	}
 
-	WaitForSingleObject(s.hThread, INFINITE);
-
 	handleCommands();
+
+	WaitForSingleObject(s.hThread, INFINITE);
 
 	// TODO Operator shutdown handler
 	FreeLibrary(hLib);
