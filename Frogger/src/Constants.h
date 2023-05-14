@@ -7,6 +7,7 @@
 #define SERVER_MEMORY _T("SERVER_MEMORY")
 #define SERVER_GAME_MUTEX _T("SERVER_GAME_MUTEX")
 #define SERVER_MEMORY_MUTEX _T("SERVER_MEMORY_MUTEX")
+#define SERVER_MEMORY_BUFFER _T("SERVER_MEMORY_BUFFER")
 
 typedef enum {
 	OFF,
@@ -33,6 +34,17 @@ typedef struct {
 
 #define MAX_LANES 10
 #define MAX_CARS 8
+#define BUF_SIZE 10
+
+typedef enum {
+	STOP,
+	CREATE_OBSTACLE
+} BufferMsgType;
+
+typedef struct {
+	int type;
+	TCHAR message[255];
+} CircularBuffer;
 
 typedef struct { 
 	bool exit;
@@ -41,8 +53,9 @@ typedef struct {
 } GameInfo;
 
 typedef struct {
-	HANDLE hThread, hMemory, hMutex;
-	GameInfo g, * gameInfoBuf;
+	HANDLE hGameThread, hCommsThread, hMemory, hMutex, hCircBuf;
+	GameInfo g;
+	CircularBuffer* pCircBuf;
 	int clients, speed, lanes, status, gamemode;
 	// STATUS: RUN = 0, EXIT = 1
 } ServerData;

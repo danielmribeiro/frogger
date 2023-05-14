@@ -29,12 +29,12 @@ void clearConsole()
 
 DWORD WINAPI readGame(LPVOID p) {
 	ServerData* s = (ServerData*)p;
-	GameInfo* buf = (GameInfo*) getMapViewOfFile(s->hMemory);
-	if (!buf) {
+	GameInfo* pGameInfo = (GameInfo*) getMapViewOfFile(s->hMemory, 
+		sizeof(GameInfo));
+	if (!pGameInfo) {
 		_tprintf(_T("Error creating map view of shared memory\n"));
 		return -1;
 	}
-
 
 	do {
 		WaitForSingleObject(s->hMutex, INFINITE);
@@ -44,7 +44,11 @@ DWORD WINAPI readGame(LPVOID p) {
 
 		TCHAR gameStr[2048] = _T("");
 
-		_tprintf(_T("FROGGER GAME\n[Level:%d] [Cars:%d] [Lanes:%d] [Speed:%d]\n"),buf->level,getCarsNumber(buf),buf->lanes,buf->speed);
+		_tprintf(_T("FROGGER GAME\n[Level:%d] [Cars:%d] [Lanes:%d] [Speed:%d]\n"),
+			pGameInfo->level,
+			getCarsNumber(pGameInfo),
+			pGameInfo->lanes,
+			pGameInfo->speed);
 
 		//FINISH LINE
 		for (int j = 0; j < 20; j++) {
@@ -52,9 +56,9 @@ DWORD WINAPI readGame(LPVOID p) {
 		}
 		_tprintf(_T("\n"));
 		//STREET
-		for (int i = 0; i < buf->lanes; i++) {
+		for (int i = 0; i < pGameInfo->lanes; i++) {
 			for (int j = 0; j < 20; j++) {
-				if (buf->cars[i][0].pos.x == j) {
+				if (pGameInfo->cars[i][0].pos.x == j) {
 					_tprintf(_T("C"));
 				}
 				else {
@@ -69,16 +73,7 @@ DWORD WINAPI readGame(LPVOID p) {
 			_tprintf(_T("S"));
 		}
 
-		/*TCHAR gameboardStr[] = _T("XXXXXXXXXX\nXXXXXXXXXX\nXXXXXXXXXX\nXXXXXXXXXX\nXXXXXXXXXX\nXXXXXXXXXX\n");
-		wcscat_s(gameStr, 2048, gameboardStr);*/
-
-		_tprintf(_T("%s\n"), gameStr);  // Print the updated string
-		/*_tprintf(_T("Cars: %d\nLevel: %d\nLanes: %d\nSpeed: %d\n"),
-			getCarsNumber(buf),
-			buf->level,
-			buf->lanes,
-			buf->speed
-		);*/
+		_tprintf(_T("%s\n"), gameStr);
 
 		ReleaseMutex(s->hMutex);
 		Sleep(1000);
@@ -88,8 +83,10 @@ DWORD WINAPI readGame(LPVOID p) {
 }
 
 void handleCommands() {
+	bool exit = false;
 	TCHAR cmd[128];
-	while (1) {
+
+	while (!exit) {
 		_fgetts(cmd, 128, stdin);
 		if (_tcsicmp(COMMAND_INSERT, cmd) == 0) {
 			//TO DO INSERT
@@ -101,7 +98,7 @@ void handleCommands() {
 			//TO DO INVERT DIRECTION
 		}
 		else if (_tcsicmp(COMMAND_QUIT, cmd) == 0) {
-			break;
+			exit = true;
 		}
 		else {
 			_tprintf(_T("Command not found!"));
@@ -136,14 +133,14 @@ int _tmain(int argc, TCHAR* argv[]) {
 
 
 	// Create thread to read game
-	if (!createThread(&(s.hThread), readGame, &s)) {
+	if (!createThread(&(s.hGameThread), readGame, &s)) {
 		_tprintf(_T("Error creating game handler thread"));
 		return -4;
 	}
 
 	handleCommands();
 
-	WaitForSingleObject(s.hThread, INFINITE);
+	WaitForSingleObject(s.hGameThread, INFINITE);
 
 	// TODO Operator shutdown handler
 	FreeLibrary(hLib);

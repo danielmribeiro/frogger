@@ -63,12 +63,12 @@ bool handleRegistry(ServerData* s) {
 
 void handleCommands(ServerData* data) {
 	TCHAR cmd[128];
-	while (1) {
+	while (!data->status) {
 		_fgetts(cmd, 128, stdin);
 		if (_tcsicmp(COMMAND_DEMO, cmd) == 0) {
 			if (data->status == 1) {
 				data->gamemode = GAME_DEMO;
-				if (!createThread(data->hThread, handleGame, data)) {
+				if (!createThread(data->hGameThread, handleGame, data)) {
 					_tprintf(_T("Error creating game handler thread"));
 					return -1;
 				}
@@ -165,7 +165,7 @@ void move(GameInfo* g) {
 
 DWORD WINAPI handleGame(LPVOID p) {
 	ServerData* s = (ServerData*)p;
-	int tries = 0, counter = 0;
+	int tries = 0;
 	bool res = true;
 
 	setGameData(s, 0, s->speed, s->lanes);
@@ -176,8 +176,6 @@ DWORD WINAPI handleGame(LPVOID p) {
 		// Move game elements
 		WaitForSingleObject(s->hMutex, INFINITE);
 		move(&(s->g));
-
-		if (counter < 0) s->g.exit = true;
 
 		// Save changes to shared memory
 		do {
@@ -192,7 +190,40 @@ DWORD WINAPI handleGame(LPVOID p) {
 		}
 
 		ReleaseMutex(s->hMutex);
-		counter++;
 		Sleep(2000);
 	}
+
+	return 0;
+}
+
+DWORD WINAPI handleComms(LPVOID p) {
+	ServerData* s = (ServerData*)p;
+	CircularBuffer* circBuf = NULL;
+	size_t size = sizeof(CircularBuffer) * BUF_SIZE;
+
+	if (!(s->hCircBuf = createSharedMemory(SERVER_MEMORY_BUFFER,
+		size))) {
+		_tprintf(_T("Error creating circular buffer shared memory file! Shutting down..."));
+		s->status = 1;
+		return -1;
+	}
+
+	circBuf = (CircularBuffer*)getMapViewOfFile(s->hCircBuf, size);
+	if (!circBuf) {
+		_tprintf(_T("Error creating map view of circular buffer memory file\n"));
+		s->status = 1;
+		return -2;
+	}
+
+	// Initialize circular buffer
+	for (int i = 0; i < BUF_SIZE; i++) {
+		circBuf[i].type = -1;
+		_tcscpy_s(circBuf[i].message, sizeof(_T("")), _T(""));
+	}
+
+	while (!s->status) {
+		Sleep(1000);
+	}
+
+	return 0;
 }
