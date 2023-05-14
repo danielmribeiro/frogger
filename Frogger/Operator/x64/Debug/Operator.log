@@ -1,6 +1,0 @@
-﻿  Constants.c
-C:\Users\Daniel\Documents\GitHub\Frogger\Frogger\src\Constants.c(25,41): warning C4047: '=': 'HINSTANCE *' differs in levels of indirection from 'HMODULE'
-  Operator.c
-C:\Users\Daniel\Documents\GitHub\Frogger\Frogger\src\Operator.c(45,39): warning C4133: 'function': incompatible types - from 'unsigned short [14]' to 'const char *'
-  Generating Code...
-  Operator.vcxproj -> C:\Users\Daniel\Documents\GitHub\Frogger\Frogger\x64\Debug\Operator.exe

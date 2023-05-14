@@ -60,17 +60,6 @@ bool handleRegistry(ServerData* s) {
 	return true;
 }
 
-bool createThread(HANDLE* h, LPTHREAD_START_ROUTINE f, LPVOID ptrData) {
-	*h = CreateThread(NULL,
-		0,
-		f,
-		ptrData,
-		0,
-		NULL);
-
-	if (*h == NULL) return false;
-	return true;
-}
 
 void handleCommands(ServerData* data) {
 	TCHAR cmd[128];
@@ -132,6 +121,7 @@ bool isPositionEmpty(GameInfo* g, int x, int lane) {
 
 // TODO add difficulty increase due to changing level
 void setGameData(ServerData* s, int level, int speed, int lanes) {
+	Direction dir = RIGHT;
 	GameInfo* g = &(s->g);
 	g->level = level;
 	g->lanes = lanes;
@@ -141,6 +131,7 @@ void setGameData(ServerData* s, int level, int speed, int lanes) {
 	// Init cars
 	for (int i = 0; i < g->lanes; i++) {
 		g->numCars[i] = 1; // TODO difficulty change here
+		dir = getRandomValue(1);
 
 		for (int j = 0, x = -1, y = -1; j < 8; j++) {
 			do {
@@ -150,7 +141,7 @@ void setGameData(ServerData* s, int level, int speed, int lanes) {
 
 			g->cars[i][j].pos.x = x;
 			g->cars[i][j].pos.y = y;
-			g->cars[i][j].dir = getRandomValue(1);
+			g->cars[i][j].dir = dir;
 		}
 	}
 }
@@ -173,31 +164,35 @@ void move(GameInfo* g) {
 }
 
 DWORD WINAPI handleGame(LPVOID p) {
-	int tries = 0;
-	bool res = true;
 	ServerData* s = (ServerData*)p;
+	int tries = 0, counter = 0;
+	bool res = true;
+
 	setGameData(s, 0, s->speed, s->lanes);
 
 	// Game loop
-	while (!s->status &&
-		WaitForSingleObject(s->hMutexStop, INFINITE) == WAIT_OBJECT_0) {
+	while (!s->status) {
+		_tprintf(_T("PING\n"));
 		// Move game elements
-		WaitForSingleObject(s->g.hMutex, INFINITE);
+		WaitForSingleObject(s->hMutex, INFINITE);
 		move(&(s->g));
+
+		if (counter < 0) s->g.exit = true;
 
 		// Save changes to shared memory
 		do {
 			tries++;
 			res = writeSharedMemory(s->hMemory, &(s->g), sizeof(GameInfo));
 		} while (!res && tries <= 3);
-		
-		// Shutdown server. Something went wrong with coms
+
+		// Shutdown server. Something went wrong with communication
 		if (!res) {
-			ReleaseMutex(s->g.hMutex);
+			ReleaseMutex(s->hMutex);
 			return -1;
 		}
 
-		ReleaseMutex(s->g.hMutex);
-		Sleep(1000);
+		ReleaseMutex(s->hMutex);
+		counter++;
+		Sleep(2000);
 	}
 }

@@ -1,5 +1,41 @@
 #include "Operator.h"
 
+int getCarsNumber(GameInfo* g) {
+	int numCars = 0;
+
+	for (int i = 0; i < g->lanes; i++)
+		numCars += g->numCars[i];
+
+	return numCars;
+}
+
+DWORD WINAPI readGame(LPVOID p) {
+	ServerData* s = (ServerData*)p;
+	GameInfo* buf = (GameInfo*) getMapViewOfFile(s->hMemory);
+	if (!buf) {
+		_tprintf(_T("Error creating map view of shared memory\n"));
+		return -1;
+	}
+
+
+	do {
+		WaitForSingleObject(s->hMutex, INFINITE);
+
+		// TODO print gameboard
+		_tprintf(_T("Cars: %d\nLevel: %d\nLanes: %d\nSpeed: %d\n"),
+			getCarsNumber(buf),
+			buf->level,
+			buf->lanes,
+			buf->speed
+		);
+
+		ReleaseMutex(s->hMutex);
+		Sleep(1000);
+	} while (!s->g.exit);
+
+	return 0;
+}
+
 void handleCommands() {
 	TCHAR cmd[128];
 	while (1) {
@@ -41,19 +77,27 @@ int _tmain(int argc, TCHAR* argv[]) {
 		return -2;
 	}
 
-	// TODO Create shared memory for serverData memory
-	if (!(s.hMemory = createSharedMemory(SERVER_MEMORY, sizeof(GameInfo)))) {
+
+	if (!(s.hMemory = openSharedMemory(SERVER_MEMORY))) {
 		_tprintf(_T("Error creating shared memory file! Shutting down..."));
 		return -3;
 	}
+
+
+	// Create thread to read game
+	if (!createThread(&(s.hThread), readGame, &s)) {
+		_tprintf(_T("Error creating game handler thread"));
+		return -4;
+	}
+
+	WaitForSingleObject(s.hThread, INFINITE);
 
 	handleCommands();
 
 	// TODO Operator shutdown handler
 	FreeLibrary(hLib);
-	CloseHandle(s.hMutexStop);
+	CloseHandle(s.hMutex);
 	CloseHandle(s.hMemory);
-	CloseHandle(s.g.hMutex);
 
 	return 0;
 }

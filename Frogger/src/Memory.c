@@ -2,76 +2,98 @@
 
 SharedMemoryHandle createSharedMemory(const char* name, size_t size)
 {
-    SharedMemoryHandle handle = NULL;
+	SharedMemoryHandle handle = NULL;
 
-    HANDLE fileHandle = CreateFileMappingA(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, (DWORD)size, name);
-    if (fileHandle != NULL)
-    {
-        handle = (SharedMemoryHandle)fileHandle;
-    }
+	HANDLE fileHandle = CreateFileMappingA(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, (DWORD)size, name);
+	if (fileHandle != NULL)
+	{
+		handle = (SharedMemoryHandle)fileHandle;
+	}
 
-    return handle;
+	return handle;
 }
 
 SharedMemoryHandle openSharedMemory(const char* name)
 {
-    SharedMemoryHandle handle = NULL;
+	SharedMemoryHandle handle = NULL;
 
-    HANDLE fileHandle = OpenFileMappingA(FILE_MAP_ALL_ACCESS, FALSE, name);
-    if (fileHandle != NULL)
-    {
-        handle = (SharedMemoryHandle)fileHandle;
-    }
+	HANDLE fileHandle = OpenFileMappingA(FILE_MAP_ALL_ACCESS,
+		FALSE,
+		name);
+	if (fileHandle != NULL)
+	{
+		handle = (SharedMemoryHandle)fileHandle;
+	}
 
-    return handle;
+	return handle;
+}
+
+LPVOID getMapViewOfFile(SharedMemoryHandle handle) {
+	LPVOID buffer = MapViewOfFile(handle,
+		FILE_MAP_ALL_ACCESS,
+		0,
+		0,
+		0);
+
+	if (!buffer) return NULL;
+	return buffer;
 }
 
 bool writeSharedMemory(SharedMemoryHandle handle, const void* data, size_t size)
 {
-    bool success = false;
+	bool success = false;
 
-    if (handle != NULL)
-    {
-        LPVOID buffer = MapViewOfFile(handle, FILE_MAP_WRITE, 0, 0, size);
-        if (buffer != NULL)
-        {
-            memcpy(buffer, data, size);
-            success = true;
+	if (handle != NULL)
+	{
+		LPVOID buffer = MapViewOfFile(handle,
+			FILE_MAP_WRITE,
+			0,
+			0,
+			size);
+		if (buffer != NULL)
+		{
+			memcpy(buffer, data, size);
+			success = true;
 
-            UnmapViewOfFile(buffer);
-        }
-    }
+			UnmapViewOfFile(buffer);
+		}
+	}
 
-    return success;
+	return success;
 }
 
 bool readSharedMemory(SharedMemoryHandle handle, void* data, size_t size)
 {
-    bool success = false;
+	bool success = false;
 
-    if (handle != NULL)
-    {
-        LPVOID buffer = MapViewOfFile(handle, FILE_MAP_READ, 0, 0, size);
-        if (buffer != NULL)
-        {
-            memcpy(data, buffer, size);
-            success = true;
+	if (handle != NULL)
+	{
+		LPVOID buffer = MapViewOfFile(handle,
+			FILE_MAP_READ,
+			0,
+			0,
+			size);
+		if (buffer != NULL)
+		{
+			memcpy(data, buffer, size);
+			success = true;
 
-            UnmapViewOfFile(buffer);
-        }
-    }
+			UnmapViewOfFile(buffer);
+		}
+	}
 
-    return success;
+	return success;
 }
 
-bool closeSharedMemory(SharedMemoryHandle handle)
+bool closeSharedMemory(SharedMemoryHandle handle, LPVOID buf)
 {
-    bool success = false;
+	bool success = false;
 
-    if (handle != NULL)
-    {
-        success = CloseHandle((HANDLE)handle);
-    }
+	if (handle != NULL)
+	{
+		if (buf) UnmapViewOfFile(buf);
+		success = CloseHandle((HANDLE)handle);
+	}
 
-    return success;
+	return success;
 }

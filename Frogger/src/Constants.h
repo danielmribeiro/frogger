@@ -34,15 +34,15 @@ typedef struct {
 #define MAX_LANES 10
 #define MAX_CARS 8
 
-typedef struct {
-	HANDLE hMutex; // CONTROL MUTEX 
+typedef struct { 
+	bool exit;
 	int level, lanes, speed, numCars[MAX_LANES];
 	Car cars[MAX_LANES][MAX_CARS];
 } GameInfo;
 
 typedef struct {
-	HANDLE hThread, hMemory, hMutexStop;
-	GameInfo g;
+	HANDLE hThread, hMemory, hMutex;
+	GameInfo g, * gameInfoBuf;
 	int clients, speed, lanes, status, gamemode;
 	// STATUS: RUN = 0, EXIT = 1
 } ServerData;
@@ -79,5 +79,6 @@ typedef struct {
 
 bool initServerData(ServerData* s);
 bool initMemoryDLL(HINSTANCE* h);
+bool createThread(HANDLE* h, LPTHREAD_START_ROUTINE f, LPVOID ptrData);
 
 #endif
