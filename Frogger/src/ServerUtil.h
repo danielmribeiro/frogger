@@ -71,20 +71,15 @@ typedef struct {
 	// STATUS: RUN = 0, EXIT = 1
 } ServerData;
 
-
-
-void initServerData(ServerData* s);
+bool initServerData(ServerData* s);
 bool initMemoryDLL(HINSTANCE* h);
 bool isProgramUnique(HANDLE* hMutex, LPCSTR filename);
 void readArguments(ServerData* s, int size, TCHAR* args[]);
 bool handleRegistry(ServerData* s);
 bool createThread(HANDLE* h, LPTHREAD_START_ROUTINE f, LPVOID ptrData);
-void handleCommands(ServerData* s);
+void handleCommands(ServerData* data);
 
 
 DWORD WINAPI handleGame(LPVOID p);
-void handleNewGame(ServerData* data, int typeOfGame);
-void handleDemoGame(ServerData* s);
-
 
 #endif

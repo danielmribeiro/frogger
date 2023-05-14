@@ -86,7 +86,7 @@ bool handleRegistry(ServerData* s) {
 	return true;
 }
 
-bool createThread(HANDLE * h, LPTHREAD_START_ROUTINE f, LPVOID ptrData) {
+bool createThread(HANDLE* h, LPTHREAD_START_ROUTINE f, LPVOID ptrData) {
 	*h = CreateThread(NULL,
 		0,
 		f,
@@ -98,14 +98,11 @@ bool createThread(HANDLE * h, LPTHREAD_START_ROUTINE f, LPVOID ptrData) {
 	return true;
 }
 
-DWORD WINAPI handleGame(LPVOID p) {
-	//TODO SEARCH
-	
-	ServerData* s = (ServerData*)p;
-	handleNewGame(s, GAME_DEMO); //START GAME
-
+void moveCars(ServerData* s) {
+	for (int i = 0; i < MAX_LANES; i++)
+		for (int j = 0; j < MAX_CARS; j++);
+				
 }
-
 
 int getRandomValue(int max) {
 	srand(time(NULL));
@@ -117,7 +114,7 @@ void handleCommands(ServerData* data) {
 	while (1) {
 		_fgetts(cmd, 128, stdin);
 		if (_tcsicmp(COMMAND_DEMO, cmd) == 0) {
-			handleNewGame(data, GAME_DEMO);
+			//TODO NEW GAME
 		}
 		else if (_tcsicmp(COMMAND_SUSPEND, cmd) == 0) {
 			//TO DO SUSPEND GAME
@@ -132,7 +129,7 @@ void handleCommands(ServerData* data) {
 			//TO DO EXIT GAME
 		}
 		else if (_tcsicmp(COMMAND_QUIT, cmd) == 0) {
-			
+
 			break;//temporary
 
 			//send warning to other apps
@@ -175,45 +172,26 @@ void setGameData(GameInfo* g, int level, int speed, int lanes) {
 
 			g->cars[i][j].pos.x = x;
 			g->cars[i][j].pos.y = y;
+			g->cars[i][j].dir = getRandomValue(1);
 		}
 	}
 }
 
 
+DWORD WINAPI handleGame(LPVOID p) {
+	//TODO SEARCH
 
-
-
-
-
-void handleNewGame(ServerData* data, int typeOfGame) {
-	switch (typeOfGame) {
-	case GAME_DEMO:
-		handleDemoGame(data);
-		break;
-	case GAME_INDIVIDUAL:
-		//TODO HANDLE INDIVIDUAL GAME
-		break;
-	case GAME_COMPETITIVE:
-		//TODO HANDLE COMPETITIVE GAME
-		break;
-	default:
-		_tprintf(_T("Game mode not found!"));
-		break;
-	}
-}
-
-void handleDemoGame(ServerData* s) {
-	//TODO Force Exit Current Game
-	//TODO Disconnect all the players connected
-	
+	ServerData* s = (ServerData*)p;
 	setGameData(&(s->g), 0, s->speed, s->lanes);
 
 	// Game loop
 	while (!s->status && WaitForSingleObject(s->hMutexStop, INFINITE)) {
 		// Move cars
+		moveCars(s);
+
+		Sleep(40);
 	}
 }
-
 
 //INICEI O SERVIDOR
 //TRATEI TUDO DIREITINHO
