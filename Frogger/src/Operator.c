@@ -9,6 +9,24 @@ int getCarsNumber(GameInfo* g) {
 	return numCars;
 }
 
+void clearConsole()
+{
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	COORD coordScreen = { 0, 0 };
+	DWORD cCharsWritten;
+	CONSOLE_SCREEN_BUFFER_INFO csbi;
+	DWORD dwConSize;
+
+	GetConsoleScreenBufferInfo(hConsole, &csbi);
+	dwConSize = csbi.dwSize.X * csbi.dwSize.Y;
+
+	FillConsoleOutputCharacter(hConsole, ' ', dwConSize, coordScreen, &cCharsWritten);
+	GetConsoleScreenBufferInfo(hConsole, &csbi);
+	FillConsoleOutputAttribute(hConsole, csbi.wAttributes, dwConSize, coordScreen, &cCharsWritten);
+
+	SetConsoleCursorPosition(hConsole, coordScreen);
+}
+
 DWORD WINAPI readGame(LPVOID p) {
 	ServerData* s = (ServerData*)p;
 	GameInfo* buf = (GameInfo*) getMapViewOfFile(s->hMemory);
@@ -22,12 +40,45 @@ DWORD WINAPI readGame(LPVOID p) {
 		WaitForSingleObject(s->hMutex, INFINITE);
 
 		// TODO print gameboard
-		_tprintf(_T("Cars: %d\nLevel: %d\nLanes: %d\nSpeed: %d\n"),
+		clearConsole();
+
+		TCHAR gameStr[2048] = _T("");
+
+		_tprintf(_T("FROGGER GAME\n[Level:%d] [Cars:%d] [Lanes:%d] [Speed:%d]\n"),buf->level,getCarsNumber(buf),buf->lanes,buf->speed);
+
+		//FINISH LINE
+		for (int j = 0; j < 20; j++) {
+			_tprintf(_T("F"));
+		}
+		_tprintf(_T("\n"));
+		//STREET
+		for (int i = 0; i < buf->lanes; i++) {
+			for (int j = 0; j < 20; j++) {
+				if (buf->cars[i][0].pos.x == j) {
+					_tprintf(_T("C"));
+				}
+				else {
+					_tprintf(_T("X"));
+				}
+			}
+			_tprintf(_T("\n"));
+		}
+
+		//START LINE
+		for (int j = 0; j < 20; j++) {
+			_tprintf(_T("S"));
+		}
+
+		/*TCHAR gameboardStr[] = _T("XXXXXXXXXX\nXXXXXXXXXX\nXXXXXXXXXX\nXXXXXXXXXX\nXXXXXXXXXX\nXXXXXXXXXX\n");
+		wcscat_s(gameStr, 2048, gameboardStr);*/
+
+		_tprintf(_T("%s\n"), gameStr);  // Print the updated string
+		/*_tprintf(_T("Cars: %d\nLevel: %d\nLanes: %d\nSpeed: %d\n"),
 			getCarsNumber(buf),
 			buf->level,
 			buf->lanes,
 			buf->speed
-		);
+		);*/
 
 		ReleaseMutex(s->hMutex);
 		Sleep(1000);
