@@ -127,6 +127,7 @@ void setGameData(ServerData* s, int level, int speed, int lanes) {
 	g->lanes = lanes;
 	g->speed = speed;
 	s->status = 0;
+	g->isCarsRunning = true;
 
 	// Init cars
 	for (int i = 0; i < g->lanes; i++) {
@@ -147,20 +148,21 @@ void setGameData(ServerData* s, int level, int speed, int lanes) {
 }
 
 void move(GameInfo* g) {
-	// Cars
-	for (int i = 0; i < g->lanes; i++)
-		for (int j = 0; j < g->numCars[i]; j++)
-			if (g->cars[i][j].dir == RIGHT)
-				if (g->cars[i][j].pos.x == 19)
-					g->cars[i][j].pos.x = 0;
-				else
-					g->cars[i][j].pos.x++;
-			else if (g->cars[i][j].dir == LEFT) {
-				if (g->cars[i][j].pos.x == 0)
-					g->cars[i][j].pos.x = 19;
-				else
-					g->cars[i][j].pos.x--;
-			}
+	// Move Cars
+	if (g->isCarsRunning)
+		for (int i = 0; i < g->lanes; i++)
+			for (int j = 0; j < g->numCars[i]; j++)
+				if (g->cars[i][j].dir == RIGHT)
+					if (g->cars[i][j].pos.x == 19)
+						g->cars[i][j].pos.x = 0;
+					else
+						g->cars[i][j].pos.x++;
+				else if (g->cars[i][j].dir == LEFT) {
+					if (g->cars[i][j].pos.x == 0)
+						g->cars[i][j].pos.x = 19;
+					else
+						g->cars[i][j].pos.x--;
+				}
 }
 
 DWORD WINAPI handleGame(LPVOID p) {
@@ -195,7 +197,7 @@ DWORD WINAPI handleGame(LPVOID p) {
 	return 0;
 }
 
-void invertCars(GameInfo * g) {
+void invertCars(GameInfo* g) {
 	for (int i = 0; i < g->lanes; i++)
 		for (int j = 0; j < g->numCars[i]; j++)
 			if (g->cars[i][j].dir == RIGHT)
@@ -206,7 +208,7 @@ void invertCars(GameInfo * g) {
 
 DWORD WINAPI handleComms(LPVOID p) {
 	ServerData* s = (ServerData*)p;
-	CircularBufferMemory * circBufMemory = NULL;
+	CircularBufferMemory* circBufMemory = NULL;
 	CircularBuffer buf, * pBuf = NULL;
 	HANDLE* hReadSem = NULL, * hWriteSem = NULL;
 
@@ -246,35 +248,34 @@ DWORD WINAPI handleComms(LPVOID p) {
 	circBufMemory->indexWrite = 0;
 	for (int i = 0; i < BUF_SIZE; i++) {
 		circBufMemory->circBuf[i].type = -1;
-		_tcscpy_s(circBufMemory->circBuf[i].message, 
+		_tcscpy_s(circBufMemory->circBuf[i].message,
 			sizeof(_T("")), _T(""));
 	}
 
 	while (!s->status) {
 		do {
 			resSem = WaitForSingleObject(hReadSem, 1000);
-			
+
 		} while (resSem == WAIT_TIMEOUT && !s->status);
 
 		WaitForSingleObject(s->hMutex, 1000);
 
 		if (s->status) break;
-	
+
 		// TODO circularBuffer read handler
 		indexRead = circBufMemory->indexRead++;
 		pBuf = &(circBufMemory->circBuf[indexRead]);
 		memcpy(&buf, pBuf, sizeof(CircularBuffer));
 
-		_tprintf(_T("Got message\nType: %d\nMsg: %s\n"), 
+		_tprintf(_T("Got message\nType: %d\nMsg: %s\n"),
 			buf.type,
 			buf.message);
 
 		switch (buf.type) {
 		case(STOP_CARS):
-			_tprintf(_T("Implement stop cars\n"));
-
+			s->g.isCarsRunning = !s->g.isCarsRunning;
 			break;
-		
+
 		case(INVERT_CARS):
 			invertCars(&(s->g));
 			break;
@@ -284,7 +285,7 @@ DWORD WINAPI handleComms(LPVOID p) {
 			_tprintf(_T("Implement insert obstacle\n"));
 			break;
 
-		default: 
+		default:
 			break;
 		}
 

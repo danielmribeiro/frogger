@@ -141,6 +141,7 @@ void handleCommands(ServerData* s) {
 		}
 		else if (_tcsicmp(COMMAND_QUIT, cmd) == 0) {
 			exit = true;
+			s->g.exit = true;
 		}
 		else {
 			_tprintf(_T("Command not found!"));
