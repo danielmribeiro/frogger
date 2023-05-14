@@ -79,10 +79,11 @@ bool isProgramUnique(HANDLE* hMutex, LPCSTR filename);
 void readArguments(ServerData* s, int size, TCHAR* args[]);
 bool handleRegistry(ServerData* s);
 bool createThread(HANDLE* h, LPTHREAD_START_ROUTINE f, LPVOID ptrData);
-
+void handleCommands(ServerData* s);
 
 
 DWORD WINAPI handleGame(LPVOID p);
+void handleNewGame(ServerData* data, int typeOfGame, int numberOfPlayers);
 
 
 #endif

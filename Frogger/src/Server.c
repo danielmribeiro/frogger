@@ -44,6 +44,7 @@ int _tmain(int argc, TCHAR* argv[]) {
 	}
 
 	// TODO Commands Handler
+	handleCommands(&serverData);
 
 	WaitForSingleObject(serverData.hThread, INFINITE);
 

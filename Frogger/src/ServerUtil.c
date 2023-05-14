@@ -98,10 +98,70 @@ bool createThread(HANDLE * h, LPTHREAD_START_ROUTINE f, LPVOID ptrData) {
 	return true;
 }
 
+DWORD WINAPI handleGame(LPVOID p) {
+	int typeOfGame = lookForClients();
+
+	ServerData* s = (ServerData*)p;
+	handleNewGame(s, typeOfGame);
+
+	//	// Generate game data
+	//	setGameData(&(s->g), 0, s->speed, s->lanes);
+
+	//// Game loop
+	//while (!s->status && WaitForSingleObject(s->hMutexStop, INFINITE)) {
+	//	// Move cars
+
+	//}
+}
+
 
 int getRandomValue(int max) {
 	srand(time(NULL));
 	return rand() % (max + 1);
+}
+
+void handleCommands(ServerData* data) {
+	TCHAR cmd[128];
+	while (1) {
+		_fgetts(cmd, 128, stdin);
+		if (_tcsicmp(COMMAND_DEMO, cmd) == 0) {
+			handleNewGame(data, GAME_DEMO);
+		}
+		else if (_tcsicmp(COMMAND_SUSPEND, cmd) == 0) {
+			//TO DO SUSPEND GAME
+		}
+		else if (_tcsicmp(COMMAND_RESUME, cmd) == 0) {
+			//TO DO RESUME GAME
+		}
+		else if (_tcsicmp(COMMAND_RESTART, cmd) == 0) {
+			//TO DO RESTART GAME
+		}
+		else if (_tcsicmp(COMMAND_EXIT, cmd) == 0) {
+			//TO DO EXIT GAME
+		}
+		else if (_tcsicmp(COMMAND_QUIT, cmd) == 0) {
+			
+			break;//temporary
+
+			//send warning to other apps
+			//close_serverapp(ERROR_SUCCESS_COMMAND_QUIT, data);
+		}
+		else {
+			_tprintf(_T("Command not found!"));
+		}
+	}
+}
+
+int lookForClients() {
+	//while(true){
+		//WAIT FOR CLIENTS
+		//SAVE CLIENTS INFO
+		//CHECK IF CLIENT IS READY THEN BREAK
+	//}
+
+	return 0; //DEMO
+	//INDIVIDUAL - return 1;
+	//COMPETITIVE -	return 2;
 }
 
 bool isPositionEmpty(GameInfo* g, int x, int y) {
@@ -139,17 +199,34 @@ void setGameData(GameInfo* g, int level, int speed, int lanes) {
 	}
 }
 
-DWORD WINAPI handleGame(LPVOID p) {
-	ServerData* s = (ServerData*)p;
 
-	// Generate game data
-	setGameData(&(s->g), 0, s->speed, s->lanes);
 
-	// Game loop
-	while (!s->status && WaitForSingleObject(s->hMutexStop, INFINITE)) {
-		// Move cars
 
+
+
+
+void handleNewGame(ServerData* data, int typeOfGame) {
+	switch (typeOfGame) {
+	case GAME_DEMO:
+		handleDemoGame();
+		break;
+	case GAME_INDIVIDUAL:
+		//TODO HANDLE INDIVIDUAL GAME
+		break;
+	case GAME_COMPETITIVE:
+		//TODO HANDLE COMPETITIVE GAME
+		break;
+	default:
+		_tprintf(_T("Game mode not found!"));
+		break;
 	}
+}
+
+void handleDemoGame() {
+	//TODO Force Exit Current Game
+	//TODO Disconnect all the players connected
+	//TODO Fill gameBoard with demo game data
+	//Start Game
 }
 
 
