@@ -21,33 +21,6 @@ void readArguments(ServerData* s, int size, TCHAR* args[]) {
 	}
 }
 
-bool initMemoryDLL(HINSTANCE* h) {
-	if (!(h = LoadLibrary(_T("Memory.dll"))))
-		return false;
-
-	return true;
-}
-
-bool initServerData(ServerData* s) {
-	s->hMutex = NULL;
-	s->hMutexStop = NULL;
-	s->speed = -1;
-	s->lanes = -1;
-	s->gamemode = -1;
-
-	if (!(s->hMutexStop = CreateMutex(NULL, FALSE, SERVER_GAME_MUTEX))) {
-		_tprintf(_T("Error creating mutex. Shutting down"));
-		return false;
-	}
-
-	if (!(s->hMutex = CreateMutex(NULL, FALSE, SERVER_MEMORY_MUTEX))) {
-		_tprintf(_T("Error creating mutex. Shutting down"));
-		return false;
-	}
-
-	return true;
-}
-
 bool handleRegistry(ServerData* s) {
 	HANDLE hKey = NULL;
 	DWORD res;
@@ -180,8 +153,6 @@ void setGameData(ServerData* s, int level, int speed, int lanes) {
 			g->cars[i][j].dir = getRandomValue(1);
 		}
 	}
-
-	_tprintf(_T("Belele"));
 }
 
 void move(GameInfo* g) {
@@ -202,6 +173,8 @@ void move(GameInfo* g) {
 }
 
 DWORD WINAPI handleGame(LPVOID p) {
+	int tries = 0;
+	bool res = true;
 	ServerData* s = (ServerData*)p;
 	setGameData(s, 0, s->speed, s->lanes);
 
@@ -209,18 +182,22 @@ DWORD WINAPI handleGame(LPVOID p) {
 	while (!s->status &&
 		WaitForSingleObject(s->hMutexStop, INFINITE) == WAIT_OBJECT_0) {
 		// Move game elements
-		WaitForSingleObject(s->hMutex, INFINITE);
+		WaitForSingleObject(s->g.hMutex, INFINITE);
 		move(&(s->g));
 
-		for (int i = 0; i < MAX_LANES; i++)
-			for (int j = 0; j < s->g.numCars[i]; j++)
-				_tprintf(_T("Lane %d: Car(%d|%d)\n"),
-					i,
-					s->g.cars[i][j].pos.x,
-					s->g.cars[i][j].pos.y);
+		// Save changes to shared memory
+		do {
+			tries++;
+			res = writeSharedMemory(s->hMemory, &(s->g), sizeof(GameInfo));
+		} while (!res && tries <= 3);
+		
+		// Shutdown server. Something went wrong with coms
+		if (!res) {
+			ReleaseMutex(s->g.hMutex);
+			return -1;
+		}
 
-		ReleaseMutex(s->hMutex);
+		ReleaseMutex(s->g.hMutex);
 		Sleep(1000);
-
 	}
 }

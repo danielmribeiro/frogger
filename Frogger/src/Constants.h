@@ -1,6 +1,8 @@
 #ifndef _CONSTANTS_H_
 #define _CONSTANTS_H_
 
+#include "Base.h"
+
 #define SERVER_MUTEX _T("SERVER_MUTEX")
 #define SERVER_MEMORY _T("SERVER_MEMORY")
 #define SERVER_GAME_MUTEX _T("SERVER_GAME_MUTEX")
@@ -13,19 +15,37 @@ typedef enum {
 	COMPETITIVE
 } GameState;
 
-//ERRORS
-#define SUCCESS 0
-#define ERROR_MULTIPLE_INSTANCES_RUNNING 1
-#define ERROR_UNKNOWN_ARGUMENT 2
-#define ERROR_INVALID_ARGUMENTS_QUANTITY 3
-#define ERROR_INVALID_NUMBER_OF_LANES 4
-#define ERROR_INVALID_SPEED 5
-#define ERROR_INVALID_KEY_SPEED 6
-#define ERROR_INVALID_KEY_NUMBER_OF_LANES 7
-#define ERROR_CANT_OPEN_KEY 8
-#define ERROR_CANT_CREATE_KEY 9
-#define ERROR_CANT_SET_KEY 10
-#define ERROR_SUCCESS_COMMAND_QUIT 11
+typedef struct {
+	int x, y;
+} Position;
+
+typedef enum {
+	RIGHT,
+	LEFT,
+	FRONT,
+	BACK
+} Direction;
+
+typedef struct {
+	Position pos;
+	Direction dir;
+} Car;
+
+#define MAX_LANES 10
+#define MAX_CARS 8
+
+typedef struct {
+	HANDLE hMutex; // CONTROL MUTEX 
+	int level, lanes, speed, numCars[MAX_LANES];
+	Car cars[MAX_LANES][MAX_CARS];
+} GameInfo;
+
+typedef struct {
+	HANDLE hThread, hMemory, hMutexStop;
+	GameInfo g;
+	int clients, speed, lanes, status, gamemode;
+	// STATUS: RUN = 0, EXIT = 1
+} ServerData;
 
 //REGISTRY
 #define KEYPATH _T("SOFTWARE\\Frogger\\")
@@ -36,24 +56,6 @@ typedef enum {
 #define SPEED_MIN 5
 #define SPEED_MAX 120
 #define SPEED_STOPPED 0
-
-#define NUMBER_OF_LANES_STR TEXT("-l")
-#define NUMBER_OF_LANES_MIN 1
-#define NUMBER_OF_LANES_MAX 8
-#define STARTLINE_DEFAULT 1
-#define FINISHLINE_DEFAULT 1
-#define LANES_MAX (STARTLINE_DEFAULT+NUMBER_OF_LANES_MAX+FINISHLINE_DEFAULT)
-
-//FROGS
-#define FROGS_MAX 2
-#define FROGS_INDIVIDUAL 1
-#define FROGS_COMPETITIVE 2
-#define PLAYER1 _T("PLAYER 1")
-#define PLAYER2 _T("PLAYER 2")
-#define PLAYER_NAME_SIZE 128
-
-//OBSTACLES
-#define OBSTACLES_MAX (LANES_LENGTH*LANES_MAX)
 
 //LIVES
 #define LIVES_MAX 3
@@ -71,4 +73,8 @@ typedef enum {
 #define COMMAND_RESUME _T("RESUME\n")
 #define COMMAND_RESTART _T("RESTART\n")
 #define COMMAND_EXIT _T("EXIT\n")
+
+bool initServerData(ServerData* s);
+bool initMemoryDLL(HINSTANCE* h);
+
 #endif

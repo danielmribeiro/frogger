@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{e180f380-5ec9-44f2-8cb2-11f7e07cc396}</ProjectGuid>
-    <RootNamespace>Server</RootNamespace>
+    <ProjectGuid>{ff968ad0-b823-41c9-b4ac-7cb9b3355f8a}</ProjectGuid>
+    <RootNamespace>Operator</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -104,7 +104,6 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)$(Platform)\src;$(SolutionDir)$(Platform)\$(Configuration)\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -129,18 +128,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\Base.h" />
-    <ClInclude Include="..\src\Communication.h" />
-    <ClInclude Include="..\src\Constants.h" />
-    <ClInclude Include="..\src\Registry.h" />
-    <ClInclude Include="..\src\Server.h" />
-    <ClInclude Include="..\src\ServerUtil.h" />
+    <ClCompile Include="..\src\Constants.c" />
+    <ClCompile Include="..\src\Operator.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\Constants.c" />
-    <ClCompile Include="..\src\Registry.c" />
-    <ClCompile Include="..\src\Server.c" />
-    <ClCompile Include="..\src\ServerUtil.c" />
+    <ClInclude Include="..\src\Base.h" />
+    <ClInclude Include="..\src\Constants.h" />
+    <ClInclude Include="..\src\Memory.h" />
+    <ClInclude Include="..\src\Operator.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

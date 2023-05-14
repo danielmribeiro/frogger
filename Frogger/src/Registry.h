@@ -6,5 +6,6 @@
 LSTATUS createRegistryKey(TCHAR* keyPath, HANDLE* hKey);
 LSTATUS openRegistryKey(TCHAR* keyPath, HANDLE* hKey);
 LSTATUS readValueFromRegistryKey(HANDLE hKey, TCHAR* keyName, DWORD* keyValue);
+LSTATUS saveValueToRegistryKey(HANDLE hKey, TCHAR* keyName, DWORD keyValue);
 
 #endif

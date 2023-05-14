@@ -3,6 +3,7 @@
 
 #include "Base.h"
 #include "Constants.h"
+#include "Memory.h"
 #include "Registry.h"
 
 /*
@@ -37,37 +38,6 @@ typedef struct {
 
 */
 
-typedef struct {
-	int x, y;
-} Position;
-
-typedef enum {
-	RIGHT,
-	LEFT,
-	FRONT,
-	BACK
-} Direction;
-
-typedef struct {
-	Position pos;
-	Direction dir;
-} Car;
-
-#define MAX_LANES 10
-#define MAX_CARS 8
-
-typedef struct {
-	int level, lanes, speed, numCars[MAX_LANES];
-	Car cars[MAX_LANES][MAX_CARS];
-} GameInfo;
-
-typedef struct {
-	HANDLE hMutex, hThread, hMemory, hMutexStop;
-	GameInfo g;
-	int clients, speed, lanes, status, gamemode;
-	// STATUS: RUN = 0, EXIT = 1
-} ServerData;
-
 bool initServerData(ServerData* s);
 bool initMemoryDLL(HINSTANCE* h);
 bool isProgramUnique(HANDLE* hMutex, LPCSTR filename);
@@ -75,7 +45,6 @@ void readArguments(ServerData* s, int size, TCHAR* args[]);
 bool handleRegistry(ServerData* s);
 bool createThread(HANDLE* h, LPTHREAD_START_ROUTINE f, LPVOID ptrData);
 void handleCommands(ServerData* data);
-
 
 DWORD WINAPI handleGame(LPVOID p);
 
