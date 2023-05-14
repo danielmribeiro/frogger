@@ -33,6 +33,7 @@ bool initServerData(ServerData* s) {
 	s->hMutexStop = NULL;
 	s->speed = -1;
 	s->lanes = -1;
+	s->gamemode = -1;
 
 	if (!(s->hMutexStop = CreateMutex(NULL, FALSE, SERVER_GAME_MUTEX))) {
 		_tprintf(_T("Error creating mutex. Shutting down"));
@@ -114,7 +115,16 @@ void handleCommands(ServerData* data) {
 	while (1) {
 		_fgetts(cmd, 128, stdin);
 		if (_tcsicmp(COMMAND_DEMO, cmd) == 0) {
-			//TODO NEW GAME
+			if (data->status == 1) {
+				data->gamemode = GAME_DEMO;
+				if (!createThread(data->hThread, handleGame, data)) {
+					_tprintf(_T("Error creating game handler thread"));
+					return -1;
+				}
+			}
+			else {
+				_tprintf(_T("Game is already runnning"));
+			}
 		}
 		else if (_tcsicmp(COMMAND_SUSPEND, cmd) == 0) {
 			//TO DO SUSPEND GAME
@@ -192,39 +202,3 @@ DWORD WINAPI handleGame(LPVOID p) {
 		Sleep(40);
 	}
 }
-
-//INICEI O SERVIDOR
-//TRATEI TUDO DIREITINHO
-
-//-----THREAD DO MAIN-----WHILE TRUE
-// COMANDOS
-
-//-----THREAD #1 -----------WHILE TRUE
-//ESTOU À ESPERA DE CLIENTES
-//RECEBI ORDEM PARA COMEÇAR O JOGO
-//VOU PARAR DE ESPERAR CLIENTES PARA SE JUNTAREM AO JOGO
-// ................. O QUE É QUE PRECISO DURANTE O JOGO? RECEBER ORDENS DOS CLIENTES, RECEBER ORDENS DOS OPERADORES E ENVIAR O JOGO A CADA JOGADA OU MOVIMENTAÇAO DE CARRO AO OPERADOR E AO CLIENTE...............
-// VOU CRIAR O GAMEBOARD SEGUNDO O NUMERO DE CLIENTES QUE TENHO CONECTADO
-
-							//-----#1 -> SUB-THREAD #1--------WHILE JOGO DECORRE
-							//ESTOU À ESPERA DE COMANDOS DE OPERADORES
-							// -> ATUALIZA MAPA()
-
-							// -----#1 -> SUB-THREAD #2--------WHILE JOGO DECORRE
-							// ESPERO COMANDOS DO CLIENTE 1
-							// -> ATUALIZA MAPA()
-
-							// -----#1 -> SUB-THREAD #3--------WHILE JOGO DECORRE
-							// ESPERO COMANDOS DO CLIENTE 2
-							// -> ATUALIZA MAPA()
-
-
-// WAIT FOR #1 -> SUB-THREAD #1 / SUB-THREAD #2 /SUB-THREAD #3
-
-
-
-// -----> ATUALIZA MAPA()-------
-// SEMPRE QUE UM CARRO SE MOVE OU HÁ UMA JOGADA {
-//	VOU ENVIAR O MEU GAMEBOARD PARA O CLIENTE
-//  VOU ENVIAR O MEU GAMEBOARD PARA O OPERADOR
-//}

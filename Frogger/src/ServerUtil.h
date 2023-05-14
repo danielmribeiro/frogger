@@ -67,7 +67,7 @@ typedef struct {
 typedef struct {
 	HANDLE hMutex, hThread, hMemory, hMutexStop;
 	GameInfo g;
-	int clients, speed, lanes, status;
+	int clients, speed, lanes, status, gamemode;
 	// STATUS: RUN = 0, EXIT = 1
 } ServerData;
 
