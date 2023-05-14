@@ -83,7 +83,8 @@ void handleCommands(ServerData* s);
 
 
 DWORD WINAPI handleGame(LPVOID p);
-void handleNewGame(ServerData* data, int typeOfGame, int numberOfPlayers);
+void handleNewGame(ServerData* data, int typeOfGame);
+void handleDemoGame(ServerData* s);
 
 
 #endif

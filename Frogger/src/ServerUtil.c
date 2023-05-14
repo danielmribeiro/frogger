@@ -99,19 +99,11 @@ bool createThread(HANDLE * h, LPTHREAD_START_ROUTINE f, LPVOID ptrData) {
 }
 
 DWORD WINAPI handleGame(LPVOID p) {
-	int typeOfGame = lookForClients();
-
+	//TODO SEARCH
+	
 	ServerData* s = (ServerData*)p;
-	handleNewGame(s, typeOfGame);
+	handleNewGame(s, GAME_DEMO); //START GAME
 
-	//	// Generate game data
-	//	setGameData(&(s->g), 0, s->speed, s->lanes);
-
-	//// Game loop
-	//while (!s->status && WaitForSingleObject(s->hMutexStop, INFINITE)) {
-	//	// Move cars
-
-	//}
 }
 
 
@@ -150,18 +142,6 @@ void handleCommands(ServerData* data) {
 			_tprintf(_T("Command not found!"));
 		}
 	}
-}
-
-int lookForClients() {
-	//while(true){
-		//WAIT FOR CLIENTS
-		//SAVE CLIENTS INFO
-		//CHECK IF CLIENT IS READY THEN BREAK
-	//}
-
-	return 0; //DEMO
-	//INDIVIDUAL - return 1;
-	//COMPETITIVE -	return 2;
 }
 
 bool isPositionEmpty(GameInfo* g, int x, int y) {
@@ -208,7 +188,7 @@ void setGameData(GameInfo* g, int level, int speed, int lanes) {
 void handleNewGame(ServerData* data, int typeOfGame) {
 	switch (typeOfGame) {
 	case GAME_DEMO:
-		handleDemoGame();
+		handleDemoGame(data);
 		break;
 	case GAME_INDIVIDUAL:
 		//TODO HANDLE INDIVIDUAL GAME
@@ -222,11 +202,16 @@ void handleNewGame(ServerData* data, int typeOfGame) {
 	}
 }
 
-void handleDemoGame() {
+void handleDemoGame(ServerData* s) {
 	//TODO Force Exit Current Game
 	//TODO Disconnect all the players connected
-	//TODO Fill gameBoard with demo game data
-	//Start Game
+	
+	setGameData(&(s->g), 0, s->speed, s->lanes);
+
+	// Game loop
+	while (!s->status && WaitForSingleObject(s->hMutexStop, INFINITE)) {
+		// Move cars
+	}
 }
 
 
