@@ -99,17 +99,6 @@ bool createThread(HANDLE* h, LPTHREAD_START_ROUTINE f, LPVOID ptrData) {
 	return true;
 }
 
-void moveCars(ServerData* s) {
-	for (int i = 0; i < MAX_LANES; i++)
-		for (int j = 0; j < MAX_CARS; j++);
-				
-}
-
-int getRandomValue(int max) {
-	srand(time(NULL));
-	return rand() % (max + 1);
-}
-
 void handleCommands(ServerData* data) {
 	TCHAR cmd[128];
 	while (1) {
@@ -151,13 +140,17 @@ void handleCommands(ServerData* data) {
 	}
 }
 
-bool isPositionEmpty(GameInfo* g, int x, int y) {
+
+int getRandomValue(int max) {
+	srand(time(NULL));
+	return rand() % (max + 1);
+}
+
+bool isPositionEmpty(GameInfo* g, int x, int lane) {
 	// Cars
-	for (int i = 0; i < MAX_LANES; i++)
-		for (int j = 0; j < MAX_CARS; j++)
-			if (g->cars[i][j].pos.x == x &&
-				g->cars[i][j].pos.y == y)
-				return false;
+	for (int i = 0; i < g->numCars[lane]; i++)
+		if (g->cars[lane][i].pos.x == x)
+			return false;
 
 	// TODO Obstacules
 
@@ -165,40 +158,68 @@ bool isPositionEmpty(GameInfo* g, int x, int y) {
 }
 
 // TODO add difficulty increase due to changing level
-void setGameData(GameInfo* g, int level, int speed, int lanes) {
+void setGameData(ServerData* s, int level, int speed, int lanes) {
+	GameInfo* g = &(s->g);
 	g->level = level;
 	g->lanes = lanes;
 	g->speed = speed;
+	s->status = 0;
 
 	// Init cars
-	for (int i = 0; i < 10; i++) {
+	for (int i = 0; i < g->lanes; i++) {
 		g->numCars[i] = 1; // TODO difficulty change here
 
 		for (int j = 0, x = -1, y = -1; j < 8; j++) {
 			do {
 				x = getRandomValue(19);
-				y = getRandomValue(19);
-			} while (!isPositionEmpty(g, x, y));
+				y = i;
+			} while (!isPositionEmpty(g, x, i));
 
 			g->cars[i][j].pos.x = x;
 			g->cars[i][j].pos.y = y;
 			g->cars[i][j].dir = getRandomValue(1);
 		}
 	}
+
+	_tprintf(_T("Belele"));
 }
 
+void move(GameInfo* g) {
+	// Cars
+	for (int i = 0; i < g->lanes; i++)
+		for (int j = 0; j < g->numCars[i]; j++)
+			if (g->cars[i][j].dir == RIGHT)
+				if (g->cars[i][j].pos.x == 19)
+					g->cars[i][j].pos.x = 0;
+				else
+					g->cars[i][j].pos.x++;
+			else if (g->cars[i][j].dir == LEFT) {
+				if (g->cars[i][j].pos.x == 0)
+					g->cars[i][j].pos.x = 19;
+				else
+					g->cars[i][j].pos.x--;
+			}
+}
 
 DWORD WINAPI handleGame(LPVOID p) {
-	//TODO SEARCH
-
 	ServerData* s = (ServerData*)p;
-	setGameData(&(s->g), 0, s->speed, s->lanes);
+	setGameData(s, 0, s->speed, s->lanes);
 
 	// Game loop
-	while (!s->status && WaitForSingleObject(s->hMutexStop, INFINITE)) {
-		// Move cars
-		moveCars(s);
+	while (!s->status &&
+		WaitForSingleObject(s->hMutexStop, INFINITE) == WAIT_OBJECT_0) {
+		// Move game elements
+		move(&(s->g));
 
-		Sleep(40);
+		for (int i = 0; i < MAX_LANES; i++)
+			for (int j = 0; j < s->g.numCars[i]; j++)
+				_tprintf(_T("Lane %d: Car(%d|%d)\n"),
+					i,
+					s->g.cars[i][j].pos.x,
+					s->g.cars[i][j].pos.y);
+
+		ReleaseMutex(s->hMutexStop);
+		Sleep(1000);
+
 	}
 }
