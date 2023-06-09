@@ -125,16 +125,12 @@ void handleCommands(ServerData* s) {
 
 	while (!exit) {
 		_fgetts(cmd, 128, stdin);
-
-		do {
-			resSem = WaitForSingleObject(hWriteSem, 1000);
-		} while (resSem == WAIT_TIMEOUT && !s->g.exit);
 		
 		if (_tcsicmp(COMMAND_INSERT, cmd) == 0) {
 			//TO DO INSERT
 		}
 		else if (_tcsicmp(COMMAND_STOP, cmd) == 0) {
-			//TO DO STOP
+			buf.type = STOP_CARS;
 		}
 		else if (_tcsicmp(COMMAND_INVERT, cmd) == 0) {
 			buf.type = INVERT_CARS;
@@ -147,6 +143,10 @@ void handleCommands(ServerData* s) {
 			_tprintf(_T("Command not found!"));
 			continue;
 		}
+
+		do {
+			resSem = WaitForSingleObject(hWriteSem, 1000);
+		} while (resSem == WAIT_TIMEOUT && !s->g.exit);
 
 		indexWrite = circBufMemory->indexWrite;
 		pBuf = &(circBufMemory->circBuf[indexWrite]);
