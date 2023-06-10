@@ -112,6 +112,67 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nC
 }
 
 
+void DrawRoads(HDC hdc, int numRoads) {
+	// Calculate the height of each road
+	int startX = 10;
+	int startY = 10;
+	int roadHeight = 400;
+	int roadWidth = 400;
+	int roadSpacing = roadHeight / numRoads;
+
+	// Draw the roads
+	for (int i = 0; i < numRoads; i++) {
+		// Calculate the coordinates for each road
+		int roadTop = startY + i * roadSpacing;
+		int roadBottom = roadTop + roadSpacing - 1;
+
+		// Determine the road color
+		COLORREF roadColor;
+		if (i == 0 || i == numRoads - 1) {
+			// First and last road color is green
+			roadColor = RGB(0, 255, 0);
+		}
+		else {
+			// Other roads color is black
+			roadColor = RGB(0, 0, 0);
+		}
+
+		// Draw the road
+		RECT roadRect = { startX, roadTop, startX + roadWidth, roadBottom };
+		HBRUSH hBrush = CreateSolidBrush(roadColor);
+		FillRect(hdc, &roadRect, hBrush);
+		DeleteObject(hBrush);
+
+		// Draw the gray line separating the roads
+		if (i != numRoads - 1) {
+			HPEN hPen = CreatePen(PS_SOLID, 4, RGB(192, 192, 192));
+			HPEN hOldPen = (HPEN)SelectObject(hdc, hPen);
+			MoveToEx(hdc, startX, roadBottom, NULL);
+			LineTo(hdc, startX + roadWidth, roadBottom);
+			SelectObject(hdc, hOldPen);
+			DeleteObject(hPen);
+		}
+
+		/// Draw vertical lines within the road
+		HPEN hBrownPen = CreatePen(PS_SOLID, 1, RGB(139, 69, 19));
+		HPEN hOldPen = (HPEN)SelectObject(hdc, hBrownPen);
+
+		int numVerticalLines = 19;
+		int lineSpacing = roadWidth / (numVerticalLines + 1);  // Add 1 for the last line
+		int lineX = startX + lineSpacing;
+
+		for (int j = 0; j < numVerticalLines; j++) {
+			MoveToEx(hdc, lineX, roadTop, NULL);
+			LineTo(hdc, lineX, roadBottom);
+			lineX += lineSpacing;
+		}
+
+		SelectObject(hdc, hOldPen);
+		DeleteObject(hBrownPen);
+	}
+
+}
+
 // ============================================================================
 // FUNÇÃO DE PROCESSAMENTO DA JANELA
 // Esta função pode ter um nome qualquer: Apenas é necesário que na inicialização da estrutura "wcApp", feita no início de // WinMain(), se identifique essa função. Neste caso "wcApp.lpfnWndProc = WndProc"
@@ -137,6 +198,17 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 			PostQuitMessage(0);
 		}
 		break;
+	case WM_PAINT:
+	{
+		PAINTSTRUCT ps;
+		HDC hdc = BeginPaint(hWnd, &ps);
+
+		// Call the function to draw the roads
+		DrawRoads(hdc, 9); // Change the number of roads here
+
+		EndPaint(hWnd, &ps);
+		break;
+	}
 	default:
 		// Neste exemplo, para qualquer outra mensagem (p.e. "minimizar","maximizar","restaurar") não é efectuado nenhum processamento, apenas se segue o "default" do Windows
 		return(DefWindowProc(hWnd, messg, wParam, lParam));
