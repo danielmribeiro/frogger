@@ -53,7 +53,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nC
 	wcApp.lpszMenuName = NULL; // Classe do menu que a janela pode ter (NULL = não tem menu)
 	wcApp.cbClsExtra = 0; // Livre, para uso particular
 	wcApp.cbWndExtra = 0; // Livre, para uso particular
-	wcApp.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);  // "hbrBackground" = handler para "brush" de pintura do fundo da janela. Devolvido por  "GetStockObject".Neste caso o fundo será branco
+	wcApp.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);  // "hbrBackground" = handler para "brush" de pintura do fundo da janela. Devolvido por  "GetStockObject".Neste caso o fundo será branco
 
 // ============================================================================
 // 2. Registar a classe "wcApp" no Windows
@@ -70,8 +70,8 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nC
 		WS_OVERLAPPEDWINDOW & ~(WS_THICKFRAME | WS_MAXIMIZEBOX), // Estilo da janela (WS_OVERLAPPED= normal) // Remove resizable borders and maximize button
 		CW_USEDEFAULT, // Posição x pixels (default=à direita da última)
 		CW_USEDEFAULT, // Posição y pixels (default=abaixo da última)
-		600, // Largura da janela (em pixels)
-		600, // Altura da janela (em pixels)
+		635, // Largura da janela (em pixels)
+		800, // Altura da janela (em pixels)
 		(HWND)HWND_DESKTOP, // handle da janela pai (se se criar uma a partir de outra) ou HWND_DESKTOP se a janela for a primeira, criada a partir do "desktop"
 		(HMENU)NULL, // handle do menu da janela (se tiver menu)
 		(HINSTANCE)hInst, // handle da instância do programa actual ("hInst" é passado num dos parâmetros de WinMain()
@@ -116,29 +116,30 @@ void DrawRoads(HDC hdc, int numRoads) {
 	// Calculate the height of each road
 	int startX = 10;
 	int startY = 10;
-	int roadHeight = 400;
-	int roadWidth = 400;
-	int roadSpacing = roadHeight / numRoads;
+	int mapHeight = 300;//altura
+	int mapWidth = 600; //largura
+	int roadSpacing = 30;
+	int totalRoads = 10;
 
 	// Draw the roads
-	for (int i = 0; i < numRoads; i++) {
+	for (int i = 0; i < totalRoads; i++) {
 		// Calculate the coordinates for each road
 		int roadTop = startY + i * roadSpacing;
 		int roadBottom = roadTop + roadSpacing - 1;
 
 		// Determine the road color
 		COLORREF roadColor;
-		if (i == 0 || i == numRoads - 1) {
+		if (i == 0 || i >= numRoads-1) {
 			// First and last road color is green
-			roadColor = RGB(0, 255, 0);
+			roadColor = RGB(48, 104, 68);
 		}
 		else {
 			// Other roads color is black
-			roadColor = RGB(0, 0, 0);
+			roadColor = RGB(58, 49, 47);
 		}
 
 		// Draw the road
-		RECT roadRect = { startX, roadTop, startX + roadWidth, roadBottom };
+		RECT roadRect = { startX, roadTop, startX + mapWidth, roadBottom };
 		HBRUSH hBrush = CreateSolidBrush(roadColor);
 		FillRect(hdc, &roadRect, hBrush);
 		DeleteObject(hBrush);
@@ -148,7 +149,7 @@ void DrawRoads(HDC hdc, int numRoads) {
 			HPEN hPen = CreatePen(PS_SOLID, 4, RGB(192, 192, 192));
 			HPEN hOldPen = (HPEN)SelectObject(hdc, hPen);
 			MoveToEx(hdc, startX, roadBottom, NULL);
-			LineTo(hdc, startX + roadWidth, roadBottom);
+			LineTo(hdc, startX + mapWidth, roadBottom);
 			SelectObject(hdc, hOldPen);
 			DeleteObject(hPen);
 		}
@@ -158,7 +159,7 @@ void DrawRoads(HDC hdc, int numRoads) {
 		HPEN hOldPen = (HPEN)SelectObject(hdc, hBrownPen);
 
 		int numVerticalLines = 19;
-		int lineSpacing = roadWidth / (numVerticalLines + 1);  // Add 1 for the last line
+		int lineSpacing = mapWidth / (numVerticalLines + 1);  // Add 1 for the last line
 		int lineX = startX + lineSpacing;
 
 		for (int j = 0; j < numVerticalLines; j++) {
@@ -169,6 +170,9 @@ void DrawRoads(HDC hdc, int numRoads) {
 
 		SelectObject(hdc, hOldPen);
 		DeleteObject(hBrownPen);
+	}
+	if (numRoads < totalRoads) {
+
 	}
 
 }
@@ -190,6 +194,8 @@ void DrawRoads(HDC hdc, int numRoads) {
 // Estas mensagens são identificadas por constantes (p.e. WM_DESTROY, WM_CHAR, WM_KEYDOWN, WM_PAINT...) definidas em windows.h
 // ============================================================================
 LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
+	int nRoads = 10;//number of roads
+
 	switch (messg) {
 	case WM_CLOSE: //Clicar para fechar a janela na cri
 	case WM_DESTROY: // Destruir a janela e terminar o programa 
@@ -204,7 +210,35 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 		HDC hdc = BeginPaint(hWnd, &ps);
 
 		// Call the function to draw the roads
-		DrawRoads(hdc, 9); // Change the number of roads here
+		DrawRoads(hdc, nRoads); // Change the number of roads here
+
+		// Load the bitmap image
+		HBITMAP hBitmap = (HBITMAP)LoadImage(NULL, TEXT("Frog1.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+		if (hBitmap != NULL) {
+			// Create a compatible device context
+			HDC hMemDC = CreateCompatibleDC(hdc);
+			if (hMemDC != NULL) {
+				// Select the bitmap into the device context
+				HBITMAP hOldBitmap = (HBITMAP)SelectObject(hMemDC, hBitmap);
+
+				int xCell = 5; //celula horizontal
+				int yInitialCell = ((nRoads-1)*30)+10 ;//celula vertical
+				// Define the coordinates for the frog image
+				int frogX = (xCell * 30)+10;  // Change the X-coordinate here
+				int frogY = yInitialCell;  // Change the Y-coordinate here
+
+				// Get the size of the bitmap
+				BITMAP bmp;
+				GetObject(hBitmap, sizeof(BITMAP), &bmp);
+
+				// Draw the bitmap onto the device context
+				BitBlt(hdc, frogX, frogY, bmp.bmWidth, bmp.bmHeight, hMemDC, 0, 0, SRCCOPY);
+
+				// Restore the old bitmap and clean up resources
+				SelectObject(hMemDC, hOldBitmap);
+				DeleteDC(hMemDC);
+			}
+		}
 
 		EndPaint(hWnd, &ps);
 		break;
