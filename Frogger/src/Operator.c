@@ -30,14 +30,19 @@ void clearConsole()
 DWORD WINAPI readGame(LPVOID p) {
 	ServerData* s = (ServerData*)p;
 	GameInfo* pGameInfo = (GameInfo*)getMapViewOfFile(s->hMemory,
-		sizeof(GameInfo));
+		sizeof(GameInfo)), localGameInfo;
 	if (!pGameInfo) {
 		_tprintf(_T("Error creating map view of shared memory\n"));
 		return -1;
 	}
 
 	while (!s->g.exit) {
+		// Wait for read event and copy game data
+		WaitForSingleObject(s->hEventGameIsUpdated, INFINITE);
 		WaitForSingleObject(s->hMutex, INFINITE);
+		memcpy(&localGameInfo, pGameInfo, sizeof(GameInfo));
+		ReleaseMutex(s->hMutex);
+		ResetEvent(s->hEventGameIsUpdated);
 
 		// TODO print gameboard
 		clearConsole();
@@ -45,10 +50,10 @@ DWORD WINAPI readGame(LPVOID p) {
 		TCHAR gameStr[2048] = _T("");
 
 		_tprintf(_T("FROGGER GAME\n[Level:%d] [Cars:%d] [Lanes:%d] [Speed:%d]\n"),
-			pGameInfo->level,
-			getCarsNumber(pGameInfo),
-			pGameInfo->lanes,
-			pGameInfo->speed);
+			localGameInfo.level,
+			getCarsNumber(&localGameInfo),
+			localGameInfo.lanes,
+			localGameInfo.speed);
 
 		//FINISH LINE
 		for (int j = 0; j < 20; j++) {
@@ -56,9 +61,9 @@ DWORD WINAPI readGame(LPVOID p) {
 		}
 		_tprintf(_T("\n"));
 		//STREET
-		for (int i = 0; i < pGameInfo->lanes; i++) {
+		for (int i = 0; i < localGameInfo.lanes; i++) {
 			for (int j = 0; j < 20; j++) {
-				if (pGameInfo->cars[i][0].pos.x == j) {
+				if (localGameInfo.cars[i][0].pos.x == j) {
 					_tprintf(_T("C"));
 				}
 				else {
@@ -74,9 +79,6 @@ DWORD WINAPI readGame(LPVOID p) {
 		}
 
 		_tprintf(_T("%s\n"), gameStr);
-
-		ReleaseMutex(s->hMutex);
-		Sleep(1000);
 	}
 
 	return 0;
@@ -177,7 +179,7 @@ int _tmain(int argc, TCHAR* argv[]) {
 		return -1;
 	}
 
-	if (!initServerData(&s)) {
+	if (!initServerData(&s, false)) {
 		_tprintf(_T("Error initializing serverData! Shutting down..."));
 		return -2;
 	}
