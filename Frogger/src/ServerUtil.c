@@ -175,6 +175,7 @@ DWORD WINAPI handleGame(LPVOID p) {
 	// Game loop
 	while (!s->status) {
 		// Move game elements
+		while (WaitForSingleObject(s->hEventGameIsUpdated, 0) == WAIT_OBJECT_0);
 		WaitForSingleObject(s->hMutex, INFINITE);
 		move(&(s->g));
 
@@ -185,12 +186,15 @@ DWORD WINAPI handleGame(LPVOID p) {
 		} while (!res && tries <= 3);
 
 		// Shutdown server. Something went wrong with communication
+		// TODO create event to abrundtly shutdown clients and operator
 		if (!res) {
 			ReleaseMutex(s->hMutex);
 			return -1;
 		}
 
+		SetEvent(s->hEventGameIsUpdated);
 		ReleaseMutex(s->hMutex);
+		// TODO add difficulty sleep multiplier
 		Sleep(2000);
 	}
 

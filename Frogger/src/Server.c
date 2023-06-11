@@ -15,7 +15,7 @@ int _tmain(int argc, TCHAR* argv[]) {
 	}
 
 	// Initialize server data
-	if (!initServerData(&serverData)) {
+	if (!initServerData(&serverData, true)) {
 		_tprintf(_T("Error initializing serverData! Shutting down..."));
 		return -2;
 	}
