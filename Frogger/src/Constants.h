@@ -12,6 +12,8 @@
 #define READ_SEMAPHORE _T("READ_SEMAPHORE")
 #define WRITE_SEMAPHORE _T("WRITE_SEMAPHORE")
 
+#define EVENT_GAME_IS_UPDATED _T("GAME_IS_UPDATED")
+
 typedef enum {
 	OFF,
 	DEMO,
@@ -63,6 +65,8 @@ typedef struct {
 
 typedef struct {
 	HANDLE hGameThread, hCommsThread, hMemory, hMutex, hCircBuf;
+
+	HANDLE hEventGameIsUpdated;
 	GameInfo g;
 	int clients, speed, lanes, status, gamemode;
 	// STATUS: RUN = 0, EXIT = 1

@@ -1,6 +1,6 @@
 #include "Constants.h"
 
-bool initServerData(ServerData* s) {
+bool initServerData(ServerData* s, bool isServer) {
 	s->hMutex = NULL;
 	s->hMemory = NULL;
 	s->speed = -1;
@@ -13,6 +13,19 @@ bool initServerData(ServerData* s) {
 		return false;
 	}
 
+	if (isServer) {
+		if (!(s->hEventGameIsUpdated = CreateEvent(NULL, TRUE, FALSE, EVENT_GAME_IS_UPDATED))) {
+			_tprintf(_T("Error creating game update event. Shutting down"));
+			return false;
+		}
+	}
+	else {
+		if (!(s->hEventGameIsUpdated = OpenEvent(EVENT_ALL_ACCESS, FALSE, EVENT_GAME_IS_UPDATED))) {
+			_tprintf(_T("Error creating game update event. Shutting down"));
+			return false;
+		}
+	}
+	
 	return true;
 }
 
