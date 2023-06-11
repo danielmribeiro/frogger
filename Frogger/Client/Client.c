@@ -177,6 +177,94 @@ void DrawRoads(HDC hdc, int numRoads) {
 
 }
 
+void DrawFrog(HDC hdc, int numRoads) {
+	// Load the bitmap image
+	HBITMAP hBitmap = (HBITMAP)LoadImage(NULL, TEXT("Frog1.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+	if (hBitmap != NULL) {
+		// Create a compatible device context
+		HDC hMemDC = CreateCompatibleDC(hdc);
+		if (hMemDC != NULL) {
+			// Select the bitmap into the device context
+			HBITMAP hOldBitmap = (HBITMAP)SelectObject(hMemDC, hBitmap);
+
+			int xCell = 5; //celula horizontal
+			int yInitialCell = ((numRoads - 1) * 30) + 10;//celula vertical
+			// Define the coordinates for the frog image
+			int frogX = (xCell * 30) + 10;  // Change the X-coordinate here
+			int frogY = yInitialCell;  // Change the Y-coordinate here
+
+			// Get the size of the bitmap
+			BITMAP bmp;
+			GetObject(hBitmap, sizeof(BITMAP), &bmp);
+
+			// Draw the bitmap onto the device context
+			BitBlt(hdc, frogX, frogY, bmp.bmWidth, bmp.bmHeight, hMemDC, 0, 0, SRCCOPY);
+
+			// Restore the old bitmap and clean up resources
+			SelectObject(hMemDC, hOldBitmap);
+			DeleteDC(hMemDC);
+		}
+	}
+}
+
+void DrawCar(HDC hdc, int numRoads, int yCell, int xCell) {
+	// Load the bitmap image
+	HBITMAP hBitmap = (HBITMAP)LoadImage(NULL, TEXT("Car1.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+	if (hBitmap != NULL) {
+		// Create a compatible device context
+		HDC hMemDC = CreateCompatibleDC(hdc);
+		if (hMemDC != NULL) {
+			// Select the bitmap into the device context
+			HBITMAP hOldBitmap = (HBITMAP)SelectObject(hMemDC, hBitmap);
+
+			
+			// Define the coordinates for the car image
+			int carX = (xCell * 30) + 10;  // Change the X-coordinate here
+			int carY = (yCell * 30) +10;  // Change the Y-coordinate here
+
+			// Get the size of the bitmap
+			BITMAP bmp;
+			GetObject(hBitmap, sizeof(BITMAP), &bmp);
+
+			// Draw the bitmap onto the device context
+			BitBlt(hdc, carX, carY, bmp.bmWidth, bmp.bmHeight, hMemDC, 0, 0, SRCCOPY);
+
+			// Restore the old bitmap and clean up resources
+			SelectObject(hMemDC, hOldBitmap);
+			DeleteDC(hMemDC);
+		}
+	}
+}
+
+void DrawObstacle(HDC hdc, int numRoads, int yCell, int xCell) {
+	// Load the bitmap image
+	HBITMAP hBitmap = (HBITMAP)LoadImage(NULL, TEXT("Obstacle1.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+	if (hBitmap != NULL) {
+		// Create a compatible device context
+		HDC hMemDC = CreateCompatibleDC(hdc);
+		if (hMemDC != NULL) {
+			// Select the bitmap into the device context
+			HBITMAP hOldBitmap = (HBITMAP)SelectObject(hMemDC, hBitmap);
+
+
+			// Define the coordinates for the obstacle image
+			int obstacleX = (xCell * 30) + 10;  // Change the X-coordinate here
+			int obstacleY = (yCell * 30) + 10;  // Change the Y-coordinate here
+
+			// Get the size of the bitmap
+			BITMAP bmp;
+			GetObject(hBitmap, sizeof(BITMAP), &bmp);
+
+			// Draw the bitmap onto the device context
+			BitBlt(hdc, obstacleX, obstacleY, bmp.bmWidth, bmp.bmHeight, hMemDC, 0, 0, SRCCOPY);
+
+			// Restore the old bitmap and clean up resources
+			SelectObject(hMemDC, hOldBitmap);
+			DeleteDC(hMemDC);
+		}
+	}
+}
+
 // ============================================================================
 // FUNÇÃO DE PROCESSAMENTO DA JANELA
 // Esta função pode ter um nome qualquer: Apenas é necesário que na inicialização da estrutura "wcApp", feita no início de // WinMain(), se identifique essa função. Neste caso "wcApp.lpfnWndProc = WndProc"
@@ -212,33 +300,23 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 		// Call the function to draw the roads
 		DrawRoads(hdc, nRoads); // Change the number of roads here
 
-		// Load the bitmap image
-		HBITMAP hBitmap = (HBITMAP)LoadImage(NULL, TEXT("Frog1.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-		if (hBitmap != NULL) {
-			// Create a compatible device context
-			HDC hMemDC = CreateCompatibleDC(hdc);
-			if (hMemDC != NULL) {
-				// Select the bitmap into the device context
-				HBITMAP hOldBitmap = (HBITMAP)SelectObject(hMemDC, hBitmap);
+		DrawFrog(hdc, nRoads); //DrawFrogs
 
-				int xCell = 5; //celula horizontal
-				int yInitialCell = ((nRoads-1)*30)+10 ;//celula vertical
-				// Define the coordinates for the frog image
-				int frogX = (xCell * 30)+10;  // Change the X-coordinate here
-				int frogY = yInitialCell;  // Change the Y-coordinate here
+		DrawCar(hdc, nRoads, 1,5); // Draw car
+		DrawCar(hdc, nRoads, 2, 3); // Draw car
+		DrawCar(hdc, nRoads, 3, 14); // Draw car
+		DrawCar(hdc, nRoads, 3, 15); // Draw car
+		DrawCar(hdc, nRoads, 3, 16); // Draw car
+		DrawCar(hdc, nRoads, 4, 10); // Draw car
+		DrawCar(hdc, nRoads, 5, 6); // Draw car
+		DrawCar(hdc, nRoads, 6, 2); // Draw car
+		DrawCar(hdc, nRoads, 6, 3); // Draw car
+		DrawCar(hdc, nRoads, 7, 17); // Draw car
+		DrawCar(hdc, nRoads, 8, 13); // Draw car
 
-				// Get the size of the bitmap
-				BITMAP bmp;
-				GetObject(hBitmap, sizeof(BITMAP), &bmp);
+		DrawObstacle(hdc, nRoads, 3, 13);
+		DrawObstacle(hdc, nRoads, 6, 4);
 
-				// Draw the bitmap onto the device context
-				BitBlt(hdc, frogX, frogY, bmp.bmWidth, bmp.bmHeight, hMemDC, 0, 0, SRCCOPY);
-
-				// Restore the old bitmap and clean up resources
-				SelectObject(hMemDC, hOldBitmap);
-				DeleteDC(hMemDC);
-			}
-		}
 
 		EndPaint(hWnd, &ps);
 		break;

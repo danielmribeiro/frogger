@@ -139,9 +139,11 @@
     <ResourceCompile Include="Client.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="Car1.bmp" />
     <Image Include="Client.ico" />
     <Image Include="Frog.ico" />
     <Image Include="Frog1.bmp" />
+    <Image Include="Obstacle1.bmp" />
     <Image Include="small.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
