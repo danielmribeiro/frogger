@@ -71,7 +71,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nC
 		CW_USEDEFAULT, // Posição x pixels (default=à direita da última)
 		CW_USEDEFAULT, // Posição y pixels (default=abaixo da última)
 		635, // Largura da janela (em pixels)
-		800, // Altura da janela (em pixels)
+		635, // Altura da janela (em pixels)
 		(HWND)HWND_DESKTOP, // handle da janela pai (se se criar uma a partir de outra) ou HWND_DESKTOP se a janela for a primeira, criada a partir do "desktop"
 		(HMENU)NULL, // handle do menu da janela (se tiver menu)
 		(HINSTANCE)hInst, // handle da instância do programa actual ("hInst" é passado num dos parâmetros de WinMain()
@@ -265,6 +265,165 @@ void DrawObstacle(HDC hdc, int numRoads, int yCell, int xCell) {
 	}
 }
 
+void DrawOpponent(HDC hdc, int numRoads, int yCell, int xCell) {
+	// Load the bitmap image
+	HBITMAP hBitmap = (HBITMAP)LoadImage(NULL, TEXT("Opponent1.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+	if (hBitmap != NULL) {
+		// Create a compatible device context
+		HDC hMemDC = CreateCompatibleDC(hdc);
+		if (hMemDC != NULL) {
+			// Select the bitmap into the device context
+			HBITMAP hOldBitmap = (HBITMAP)SelectObject(hMemDC, hBitmap);
+
+
+			// Define the coordinates for the obstacle image
+			int obstacleX = (xCell * 30) + 10;  // Change the X-coordinate here
+			int obstacleY = (yCell * 30) + 10;  // Change the Y-coordinate here
+
+			// Get the size of the bitmap
+			BITMAP bmp;
+			GetObject(hBitmap, sizeof(BITMAP), &bmp);
+
+			// Draw the bitmap onto the device context
+			BitBlt(hdc, obstacleX, obstacleY, bmp.bmWidth, bmp.bmHeight, hMemDC, 0, 0, SRCCOPY);
+
+			// Restore the old bitmap and clean up resources
+			SelectObject(hMemDC, hOldBitmap);
+			DeleteDC(hMemDC);
+		}
+	}
+}
+
+void DrawStrLevel(HDC hdc, TCHAR* level) {
+	int x = 250;
+	int y = 400;
+	SetTextColor(hdc, RGB(255, 255, 255)); // Set text color to white
+	SetBkColor(hdc, RGB(0, 0, 0)); // Set background color to black
+
+	HFONT hFont = CreateFont(30, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
+		DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
+		CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
+		DEFAULT_PITCH | FF_DONTCARE, _T("Courier New"));
+	HFONT hOldFont = (HFONT)SelectObject(hdc, hFont);
+
+	TextOut(hdc, x, y, level, _tcslen(level));
+
+	SelectObject(hdc, hOldFont);
+	DeleteObject(hFont);
+}
+
+void DrawStrTime(HDC hdc, TCHAR* time) {
+	int x = 265;
+	int y = 430;
+	SetTextColor(hdc, RGB(255, 255, 255)); // Set text color to white
+	SetBkColor(hdc, RGB(0, 0, 0)); // Set background color to black
+
+	HFONT hFont = CreateFont(30, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
+		DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
+		CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
+		DEFAULT_PITCH | FF_DONTCARE, _T("Courier New"));
+	HFONT hOldFont = (HFONT)SelectObject(hdc, hFont);
+
+	TextOut(hdc, x, y, time, _tcslen(time));
+
+	SelectObject(hdc, hOldFont);
+	DeleteObject(hFont);
+}
+
+void DrawStrTitle(HDC hdc) {
+	const TCHAR* text = _T("FROGGER");
+	int x = 640/2/2;
+	int y = 330;
+	SetTextColor(hdc, RGB(255, 255, 255)); // Set text color to white
+	SetBkColor(hdc, RGB(0, 0, 0)); // Set background color to black
+
+	HFONT hFont = CreateFont(72, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
+		DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
+		CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
+		DEFAULT_PITCH | FF_DONTCARE, _T("Courier New"));
+	HFONT hOldFont = (HFONT)SelectObject(hdc, hFont);
+
+	TextOut(hdc, x, y, text, _tcslen(text));
+
+	SelectObject(hdc, hOldFont);
+	DeleteObject(hFont);
+}
+
+void DrawStrPlayerName(HDC hdc, int playerID, TCHAR* playerName) {
+	int x, y;
+	TCHAR frogImg[256] = TEXT("Frog1.bmp");
+	if (playerID == 1) {
+		x = 10;
+		y = 500;
+		_tcscpy_s(frogImg, 256, TEXT("Frog1.bmp"));
+	}
+	else if (playerID == 2) {
+		x = 10;
+		y = 550;
+		_tcscpy_s(frogImg, 256, TEXT("Opponent1.bmp"));
+	}
+
+	HBITMAP hBitmap = (HBITMAP)LoadImage(NULL, frogImg, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+	if (hBitmap != NULL) {
+		// Create a compatible device context
+		HDC hMemDC = CreateCompatibleDC(hdc);
+		if (hMemDC != NULL) {
+			// Select the bitmap into the device context
+			HBITMAP hOldBitmap = (HBITMAP)SelectObject(hMemDC, hBitmap);
+
+			// Get the size of the bitmap
+			BITMAP bmp;
+			GetObject(hBitmap, sizeof(BITMAP), &bmp);
+
+			// Draw the bitmap onto the device context
+			BitBlt(hdc, x, y, bmp.bmWidth, bmp.bmHeight, hMemDC, 0, 0, SRCCOPY);
+
+			// Restore the old bitmap and clean up resources
+			SelectObject(hMemDC, hOldBitmap);
+			DeleteDC(hMemDC);
+		}
+	}
+
+	SetTextColor(hdc, RGB(255, 255, 255)); // Set text color to white
+	SetBkColor(hdc, RGB(0, 0, 0)); // Set background color to black
+
+	HFONT hFont = CreateFont(20, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
+		DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
+		CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
+		DEFAULT_PITCH | FF_DONTCARE, _T("Courier New"));
+	HFONT hOldFont = (HFONT)SelectObject(hdc, hFont);
+
+	TextOut(hdc, x+35, y+7, playerName, _tcslen(playerName));
+
+	SelectObject(hdc, hOldFont);
+	DeleteObject(hFont);
+}
+
+void DrawStrScore(HDC hdc, int playerID, TCHAR* score) {
+	int x, y;
+	if (playerID == 1) {
+		x = 200;
+		y = 500;
+	}
+	else if (playerID == 2) {
+		x = 200;
+		y = 550;
+	}
+	SetTextColor(hdc, RGB(255, 255, 255)); // Set text color to white
+	SetBkColor(hdc, RGB(0, 0, 0)); // Set background color to black
+
+	HFONT hFont = CreateFont(20, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
+		DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
+		CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
+		DEFAULT_PITCH | FF_DONTCARE, _T("Courier New"));
+	HFONT hOldFont = (HFONT)SelectObject(hdc, hFont);
+
+	TextOut(hdc, x, y, score, _tcslen(score));
+
+	SelectObject(hdc, hOldFont);
+	DeleteObject(hFont);
+}
+
 // ============================================================================
 // FUNÇÃO DE PROCESSAMENTO DA JANELA
 // Esta função pode ter um nome qualquer: Apenas é necesário que na inicialização da estrutura "wcApp", feita no início de // WinMain(), se identifique essa função. Neste caso "wcApp.lpfnWndProc = WndProc"
@@ -317,6 +476,26 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 		DrawObstacle(hdc, nRoads, 3, 13);
 		DrawObstacle(hdc, nRoads, 6, 4);
 
+		DrawOpponent(hdc, nRoads, 6, 7);
+
+		DrawStrTitle(hdc);
+		
+		TCHAR level[] = TEXT("Level 1");
+		DrawStrLevel(hdc, level);
+
+		TCHAR playerName[] = TEXT("Player1");
+		DrawStrPlayerName(hdc, 1, playerName);
+		TCHAR opponentName[] = TEXT("Player2");
+		DrawStrPlayerName(hdc, 2, opponentName);
+
+
+		TCHAR score[] = TEXT("Score: 50");
+		DrawStrScore(hdc, 1, score);
+		DrawStrScore(hdc, 2, score);
+
+		TCHAR time[] = TEXT("00:30");
+		DrawStrTime(hdc, time);
+		
 
 		EndPaint(hWnd, &ps);
 		break;
