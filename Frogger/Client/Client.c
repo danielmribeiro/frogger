@@ -458,9 +458,31 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 
 		//START TEMPORARY
 		ClientData cData;
-		cData.screen = COMPETITIVE_GAME;
-		cData.nRoads = 10;
+		cData.screen = COMPETITIVE_WIN;
+		cData.nRoads=10;
+		cData.level=1;
+		cData.currentBitmap=1;
+		cData.frog[0].pos.x = 1;
+		cData.frog[0].pos.y = 1;
+		cData.frog[0].score = 50;
+		cData.frog[0].username = TEXT("Player 1");
+		cData.frog[1].pos.x = 1;
+		cData.frog[1].pos.y = 1;
+		cData.frog[1].score = 50;
+		cData.frog[1].username = TEXT("Player 2");
+		cData.car[0][0].dir = LEFT;
+		cData.car[0][0].pos.x = 3;
+		cData.car[0][0].pos.y = 4;
+		cData.car[0][1].dir = LEFT;
+		cData.car[0][1].pos.x = 6;
+		cData.car[0][1].pos.y = 4;
+		cData.obstacle[0][0].pos.x = 3;
+		cData.obstacle[0][0].pos.y = 4;
+		cData.obstacle[0][1].pos.x = 5;
+		cData.obstacle[0][1].pos.y = 6;
+		cData.time = 30;
 		//END TEMPORARY
+
 		switch (cData.screen) {
 		case WELCOME:
 			PaintScreenWelcome(hdc,hWnd);

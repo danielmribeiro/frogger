@@ -4,6 +4,10 @@
 #include <windows.h>
 #include <tchar.h>
 
+#define MAX_LANES 10
+#define MAX_CARS 8
+#define MAX_OBSTACLES 20
+
 typedef enum {
 	WELCOME,
 	MENU,
@@ -18,10 +22,41 @@ typedef enum {
 } ClientScreen;
 
 typedef struct {
+	int x, y;
+} Position;
+
+typedef enum {
+	RIGHT,
+	LEFT,
+	FRONT,
+	BACK
+} Direction;
+
+typedef struct {
+	Position pos;
+	Direction dir;
+} Car;
+
+typedef struct {
+	Position pos;
+} Obstacle;
+
+typedef struct {
+	Position pos;
+	TCHAR* username;
+	int score;
+} Frog;
+
+typedef struct {
 	ClientScreen screen;
 	int nRoads;
+	int level;
+	int currentBitmap;
+	Frog frog[2];
+	Car car[MAX_LANES][MAX_CARS];
+	Obstacle obstacle[MAX_LANES][MAX_OBSTACLES];
+	int time;
 }ClientData;
-
 
 #define WHITE RGB(255,255,255)
 #define BLACK RGB(0,0,0)

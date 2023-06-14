@@ -61,7 +61,7 @@ void PaintScreenWelcome(HDC hdc, HWND hWnd) {
 	DrawBackgroundColor(hdc, hWnd, DARK_GREEN);
 	DrawString(hdc, hWnd, 0, -100, 80, TEXT("FROGGER"), RED, FONT_COMIC_SANS_MS);
 	DrawString(hdc, hWnd, 0, 50, 40, TEXT("Loading..."), WHITE, FONT_ARIAL);
-	DrawString(hdc, hWnd, 0, 100, 40, TEXT("Connecting to the server..."), WHITE, FONT_ARIAL);
+	DrawString(hdc, hWnd, 0, 100, 20, TEXT("Connecting to the server..."), WHITE, FONT_ARIAL);
 }
 
 void PaintScreenMenu(HDC hdc, HWND hWnd) {
@@ -105,10 +105,22 @@ void PaintScreenIndividualGame(HDC hdc, HWND hWnd, ClientData* cData) {
 
 void PaintScreenIndividualWin(HDC hdc, HWND hWnd, ClientData* cData) {
 	DrawBackgroundColor(hdc, hWnd, GOLD);
+	//DrawString you win
+	//Drawfrog1
+	//DrawString username1
+	//DrawString score1
+	//GoToMenuButton
+	DrawString(hdc, hWnd, 0, 250, 20, TEXT("FROGGER"), RED, FONT_COMIC_SANS_MS);
 }
 
 void PaintScreenIndividualLost(HDC hdc, HWND hWnd, ClientData* cData) {
 	DrawBackgroundColor(hdc, hWnd, RED);
+	//DrawString you lost
+	//Drawfrog1
+	//DrawString username1
+	//DrawString score1
+	//GoToMenuButton
+	DrawString(hdc, hWnd, 0, 250, 20, TEXT("FROGGER"), RED, FONT_COMIC_SANS_MS);
 }
 
 void PaintScreenCompetitiveWait(HDC hdc, HWND hWnd) {
@@ -138,55 +150,75 @@ void PaintScreenCompetitiveGame(HDC hdc, HWND hWnd, ClientData* cData) {
 	//hoverfrog1
 	//hoverfrog2
 
-	//DELETE THIS:
+	//-----------------------DELETE THIS-:-----------------------------------
 
-	// Call the function to draw the roads
-	DrawRoads(hdc, cData->nRoads); // Change the number of roads here
+	//// Call the function to draw the roads
+	//DrawRoads(hdc, cData->nRoads); // Change the number of roads here
 
-	DrawFrog(hdc, cData->nRoads); //DrawFrogs
+	//DrawFrog(hdc, cData->nRoads); //DrawFrogs
 
-	DrawCar(hdc, cData->nRoads, 1, 5); // Draw car
-	DrawCar(hdc, cData->nRoads, 2, 3); // Draw car
-	DrawCar(hdc, cData->nRoads, 3, 14); // Draw car
-	DrawCar(hdc, cData->nRoads, 3, 15); // Draw car
-	DrawCar(hdc, cData->nRoads, 3, 16); // Draw car
-	DrawCar(hdc, cData->nRoads, 4, 10); // Draw car
-	DrawCar(hdc, cData->nRoads, 5, 6); // Draw car
-	DrawCar(hdc, cData->nRoads, 6, 2); // Draw car
-	DrawCar(hdc, cData->nRoads, 6, 3); // Draw car
-	DrawCar(hdc, cData->nRoads, 7, 17); // Draw car
-	DrawCar(hdc, cData->nRoads, 8, 13); // Draw car
+	//DrawCar(hdc, cData->nRoads, 1, 5); // Draw car
+	//DrawCar(hdc, cData->nRoads, 2, 3); // Draw car
+	//DrawCar(hdc, cData->nRoads, 3, 14); // Draw car
+	//DrawCar(hdc, cData->nRoads, 3, 15); // Draw car
+	//DrawCar(hdc, cData->nRoads, 3, 16); // Draw car
+	//DrawCar(hdc, cData->nRoads, 4, 10); // Draw car
+	//DrawCar(hdc, cData->nRoads, 5, 6); // Draw car
+	//DrawCar(hdc, cData->nRoads, 6, 2); // Draw car
+	//DrawCar(hdc, cData->nRoads, 6, 3); // Draw car
+	//DrawCar(hdc, cData->nRoads, 7, 17); // Draw car
+	//DrawCar(hdc, cData->nRoads, 8, 13); // Draw car
 
-	DrawObstacle(hdc, cData->nRoads, 3, 13);
-	DrawObstacle(hdc, cData->nRoads, 6, 4);
+	//DrawObstacle(hdc, cData->nRoads, 3, 13);
+	//DrawObstacle(hdc, cData->nRoads, 6, 4);
 
-	DrawOpponent(hdc, cData->nRoads, 6, 7);
+	//DrawOpponent(hdc, cData->nRoads, 6, 7);
 
-	DrawStrTitle(hdc);
+	//DrawStrTitle(hdc);
 
-	TCHAR level[] = TEXT("Level 1");
-	DrawStrLevel(hdc, level);
+	//TCHAR level[] = TEXT("Level 1");
+	//DrawStrLevel(hdc, level);
 
-	TCHAR playerName[] = TEXT("Player1");
-	DrawStrPlayerName(hdc, 1, playerName);
-	TCHAR opponentName[] = TEXT("Player2");
-	DrawStrPlayerName(hdc, 2, opponentName);
+	//TCHAR playerName[] = TEXT("Player1");
+	//DrawStrPlayerName(hdc, 1, playerName);
+	//TCHAR opponentName[] = TEXT("Player2");
+	//DrawStrPlayerName(hdc, 2, opponentName);
 
 
-	TCHAR score[] = TEXT("Score: 50");
-	DrawStrScore(hdc, 1, score);
-	DrawStrScore(hdc, 2, score);
+	//TCHAR score[] = TEXT("Score: 50");
+	//DrawStrScore(hdc, 1, score);
+	//DrawStrScore(hdc, 2, score);
 
-	TCHAR time[] = TEXT("00:30");
-	DrawStrTime(hdc, time);
+	//TCHAR time[] = TEXT("00:30");
+	//DrawStrTime(hdc, time);
 
-	//END DELETE
+	//-------------END DELETE---------------------
 }
 
 void PaintScreenCompetitiveWin(HDC hdc, HWND hWnd, ClientData* cData) {
 	DrawBackgroundColor(hdc, hWnd, GOLD);
+	//DrawString Winner + username
+	//DrawString you win
+	//Drawfrog1
+	//DrawString username1
+	//DrawString score1
+	//Drawfrog2
+	//DrawString username2
+	//DrawString score2
+	//GoToMenuButton
+	DrawString(hdc, hWnd, 0, 250, 20, TEXT("FROGGER"), RED, FONT_COMIC_SANS_MS);
 }
 
 void PaintScreenCompetitiveLost(HDC hdc, HWND hWnd, ClientData* cData) {
 	DrawBackgroundColor(hdc, hWnd, RED);
+	//DrawString Winner + username
+	//DrawString you lost
+	//Drawfrog1
+	//DrawString username1
+	//DrawString score1
+	//Drawfrog2
+	//DrawString username2
+	//DrawString score2
+	//GoToMenuButton
+	DrawString(hdc, hWnd, 0, 250, 20, TEXT("FROGGER"), RED, FONT_COMIC_SANS_MS);
 }
