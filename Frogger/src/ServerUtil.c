@@ -63,19 +63,18 @@ bool handleRegistry(ServerData* s) {
 
 void handleCommands(ServerData* data) {
 	TCHAR cmd[128];
-	while (!data->status) {
+	while (data->status != SHUTDOWN) {
 		_fgetts(cmd, 128, stdin);
-		if (_tcsicmp(COMMAND_DEMO, cmd) == 0) {
-			if (data->status == 1) {
-				data->gamemode = GAME_DEMO;
-				if (!createThread(data->hGameThread, handleGame, data)) {
+
+		if (_tcsicmp(COMMAND_START, cmd) == 0) {
+			if (data->status != GAME_RUNNING) {
+				data->status = GAME_RUNNING;
+				_tprintf(_T("Data->Status: %d"), data->status);
+				if (!createThread(&(data->hGameThread), handleGame, data))
 					_tprintf(_T("Error creating game handler thread"));
-					return -1;
-				}
 			}
-			else {
-				_tprintf(_T("Game is already runnning"));
-			}
+			else
+				_tprintf(_T("Game is already running"));
 		}
 		else if (_tcsicmp(COMMAND_SUSPEND, cmd) == 0) {
 			//TO DO SUSPEND GAME
@@ -87,21 +86,18 @@ void handleCommands(ServerData* data) {
 			//TO DO RESTART GAME
 		}
 		else if (_tcsicmp(COMMAND_EXIT, cmd) == 0) {
-			//TO DO EXIT GAME
+			data->status = WAITING_FOR_GAME;
 		}
 		else if (_tcsicmp(COMMAND_QUIT, cmd) == 0) {
-
-			break;//temporary
-
-			//send warning to other apps
-			//close_serverapp(ERROR_SUCCESS_COMMAND_QUIT, data);
+			data->status = SHUTDOWN;
+			SetEvent(data->hEventServerShutdown);
+			break;
 		}
 		else {
 			_tprintf(_T("Command not found!"));
 		}
 	}
 }
-
 
 int getRandomValue(int max) {
 	srand(time(NULL));
@@ -126,7 +122,7 @@ void setGameData(ServerData* s, int level, int speed, int lanes) {
 	g->level = level;
 	g->lanes = lanes;
 	g->speed = speed;
-	s->status = 0;
+	s->status = GAME_RUNNING;
 	g->isCarsRunning = true;
 
 	// Init cars
@@ -173,9 +169,11 @@ DWORD WINAPI handleGame(LPVOID p) {
 	setGameData(s, 0, s->speed, s->lanes);
 
 	// Game loop
-	while (!s->status) {
+	while (s->status == GAME_RUNNING) {
 		// Move game elements
-		while (WaitForSingleObject(s->hEventGameIsUpdated, 0) == WAIT_OBJECT_0);
+		while (WaitForSingleObject(s->hEventGameIsUpdated, 0) == WAIT_OBJECT_0
+			&& s->status != SHUTDOWN
+			&& s->status != WAITING_FOR_GAME);
 		WaitForSingleObject(s->hMutex, INFINITE);
 		move(&(s->g));
 
@@ -188,6 +186,7 @@ DWORD WINAPI handleGame(LPVOID p) {
 		// Shutdown server. Something went wrong with communication
 		// TODO create event to abrundtly shutdown clients and operator
 		if (!res) {
+			s->status = SHUTDOWN;
 			ReleaseMutex(s->hMutex);
 			return -1;
 		}
@@ -197,6 +196,8 @@ DWORD WINAPI handleGame(LPVOID p) {
 		// TODO add difficulty sleep multiplier
 		Sleep(2000);
 	}
+
+	_tprintf(_T("Game thread is off"));
 
 	return 0;
 }
@@ -223,13 +224,13 @@ DWORD WINAPI handleComms(LPVOID p) {
 	if (!(s->hCircBuf = createSharedMemory(SERVER_MEMORY_BUFFER,
 		size))) {
 		_tprintf(_T("Error creating circular buffer shared memory file! Shutting down..."));
-		s->status = 1;
+		s->status = SHUTDOWN;
 		return -1;
 	}
 
 	if (!(circBufMemory = (CircularBuffer*)getMapViewOfFile(s->hCircBuf, size))) {
 		_tprintf(_T("Error creating map view of circular buffer memory file\n"));
-		s->status = 1;
+		s->status = SHUTDOWN;
 		return -2;
 	}
 
@@ -256,20 +257,26 @@ DWORD WINAPI handleComms(LPVOID p) {
 			sizeof(_T("")), _T(""));
 	}
 
-	while (!s->status) {
-		do {
+	while (s->status != SHUTDOWN) {
+		do
 			resSem = WaitForSingleObject(hReadSem, 1000);
-
-		} while (resSem == WAIT_TIMEOUT && !s->status);
+		while (resSem == WAIT_TIMEOUT && s->status != SHUTDOWN);
 
 		WaitForSingleObject(s->hMutex, 1000);
 
-		if (s->status) break;
+		if (s->status == SHUTDOWN) break;
 
 		// TODO circularBuffer read handler
 		indexRead = circBufMemory->indexRead++;
 		pBuf = &(circBufMemory->circBuf[indexRead]);
 		memcpy(&buf, pBuf, sizeof(CircularBuffer));
+
+		if (circBufMemory->indexRead == BUF_SIZE) {
+			circBufMemory->indexRead = 0;
+		}
+
+		ReleaseMutex(s->hMutex);
+		ReleaseSemaphore(hWriteSem, 1, NULL);
 
 		_tprintf(_T("Got message\nType: %d\nMsg: %s\n"),
 			buf.type,
@@ -292,16 +299,78 @@ DWORD WINAPI handleComms(LPVOID p) {
 		default:
 			break;
 		}
-
-		if (circBufMemory->indexRead == BUF_SIZE) {
-			circBufMemory->indexRead = 0;
-		}
-
-		ReleaseMutex(s->hMutex);
-		ReleaseSemaphore(hWriteSem, 1, NULL);
 	}
 
 	UnmapViewOfFile(circBufMemory);
+
+	return 0;
+}
+
+DWORD WINAPI handleClientsComms(LPVOID p) {
+	ServerData* s = (ServerData*)p;
+	HANDLE hServerPipe = NULL, hClientsPipe[2] = { { NULL }, {NULL} };
+	DWORD clientsPIDS[2] = { 0 ,0 };
+	TCHAR pipeName[50];
+	DWORD pid, readPipeRes;
+	int clientsConnected = 0;
+
+	if (!(hServerPipe = CreateNamedPipe(SERVER_PIPE,
+		PIPE_ACCESS_DUPLEX,
+		PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT,
+		PIPE_UNLIMITED_INSTANCES,
+		4096,
+		4096,
+		0,
+		NULL
+	))) {
+		_tprintf(_T("Error creating server pipe\n"));
+		s->status = 1;
+		return -1;
+	}
+
+	hServerPipe = CreateNamedPipe(SERVER_PIPE,
+		PIPE_ACCESS_DUPLEX,
+		PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
+		PIPE_UNLIMITED_INSTANCES,
+		4096,
+		4096,
+		0,
+		NULL);
+
+	while (s->status != SHUTDOWN) {
+		// Wait for message from a client
+		ReadFile(hServerPipe, &pid, sizeof(pid), NULL, NULL);
+		readPipeRes = WaitForSingleObject(hServerPipe, 1000);
+
+		if (readPipeRes == WAIT_TIMEOUT)
+			continue;
+
+		// Create client pipe
+		switch (pid) {
+		case CLIENT_CONNECTION:
+			sprintf_s(pipeName, sizeof(pipeName), CLIENT_PIPE, pid);
+			clientsPIDS[clientsConnected] = pid;
+			hClientsPipe[clientsConnected] = CreateNamedPipe(pipeName,
+				PIPE_ACCESS_DUPLEX,
+				PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT,
+				PIPE_UNLIMITED_INSTANCES,
+				4096,
+				4096,
+				0,
+				NULL);
+			if (!hClientsPipe[clientsConnected]) {
+				_tprintf(_T("Erro a criar pipe para client"));
+				pid = 1;
+				WriteFile(hServerPipe, &pid, sizeof(pid), NULL, NULL);
+				continue;
+			}
+			clientsConnected++;
+			break;
+		}
+
+		pid = 0;
+		WriteFile(hServerPipe, &pid, sizeof(pid), NULL, NULL);
+	}
 
 	return 0;
 }

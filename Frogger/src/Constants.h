@@ -8,11 +8,21 @@
 #define SERVER_GAME_MUTEX _T("SERVER_GAME_MUTEX")
 #define SERVER_MEMORY_MUTEX _T("SERVER_MEMORY_MUTEX")
 #define SERVER_MEMORY_BUFFER _T("SERVER_MEMORY_BUFFER")
+#define SERVER_PIPE _T("SERVER_PIPE")
+#define EVENT_SERVER_SHUTDOWN _T("SERVER_SHUTDOWN")
+#define EVENT_GAME_IS_UPDATED _T("GAME_IS_UPDATED")
+
+#define CLIENT_PIPE _T("CLIENT_PIPE_%d")
 
 #define READ_SEMAPHORE _T("READ_SEMAPHORE")
 #define WRITE_SEMAPHORE _T("WRITE_SEMAPHORE")
 
-#define EVENT_GAME_IS_UPDATED _T("GAME_IS_UPDATED")
+#define OPERATOR_COMMAND_MUTEX _T("OPERATOR_COMMAND_MUTEX")
+#define EVENT_COMMAND_UPDATED _T("EVENT_COMMAND_UPDATED_%lu")
+
+// Client communication
+#define CLIENT_CONNECTION 1
+#define CLIENT_SHUTDOWN 2
 
 typedef enum {
 	OFF,
@@ -65,17 +75,30 @@ typedef struct {
 
 typedef struct {
 	HANDLE hGameThread, hCommsThread, hMemory, hMutex, hCircBuf;
-
-	HANDLE hEventGameIsUpdated;
+	HANDLE hClientsComms;
+	HANDLE hEventGameIsUpdated, hEventServerShutdown;
 	GameInfo g;
 	int clients, speed, lanes, status, gamemode;
-	// STATUS: RUN = 0, EXIT = 1
+	// STATUS: WAITING = 0, GAME_IS_RUNNING = 1, EXIT = 2
 } ServerData;
+
+typedef struct {
+	DWORD id;
+	HANDLE hPipe;
+} ClientPipe;
+
+// Operator Command Reader Structure
+typedef struct {
+	int* status;
+	HANDLE* hEventHasCommand, * hCommandMutex;
+	TCHAR* command;
+} CommandReaderData;
+
 
 //REGISTRY
 #define KEYPATH _T("SOFTWARE\\Frogger\\")
-#define SPEED_KEY_NAME _T("SPEED")
 #define LANES_KEY_NAME _T("NUMBEROFLANES")
+#define SPEED_KEY_NAME _T("SPEED")
 
 // SERVER DATA
 #define SPEED_MIN 5
@@ -87,13 +110,15 @@ typedef struct {
 #define LIVES_DEFAULT LIVES_DEFAULT
 
 //GAMES
-#define GAME_DEMO 0
-#define GAME_INDIVIDUAL 1
-#define GAME_COMPETITIVE 2
+#define WAITING_FOR_GAME 0
+#define GAME_RUNNING 1
+#define GAME_FINISHED 2
+#define SHUTDOWN 3
 
 //COMMANDS
 #define COMMAND_QUIT _T("QUIT\n")
 #define COMMAND_DEMO _T("DEMO\n")
+#define COMMAND_START _T("START\n")
 #define COMMAND_SUSPEND _T("SUSPEND\n")
 #define COMMAND_RESUME _T("RESUME\n")
 #define COMMAND_RESTART _T("RESTART\n")
@@ -102,7 +127,7 @@ typedef struct {
 #define COMMAND_INVERT _T("INVERT\n")
 #define COMMAND_INSERT _T("INSERT\n")
 
-bool initServerData(ServerData* s);
+bool initServerData(ServerData* s, bool isServer);
 bool initMemoryDLL(HINSTANCE* h);
 bool createThread(HANDLE* h, LPTHREAD_START_ROUTINE f, LPVOID ptrData);
 
