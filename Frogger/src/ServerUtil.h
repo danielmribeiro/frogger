@@ -6,7 +6,6 @@
 #include "Memory.h"
 #include "Registry.h"
 
-bool initServerData(ServerData* s);
 bool initMemoryDLL(HINSTANCE* h);
 bool isProgramUnique(HANDLE* hMutex, LPCSTR filename);
 void readArguments(ServerData* s, int size, TCHAR* args[]);
@@ -16,5 +15,6 @@ void handleCommands(ServerData* data);
 
 DWORD WINAPI handleGame(LPVOID p);
 DWORD WINAPI handleComms(LPVOID p);
+DWORD WINAPI handleClientsComms(LPVOID p);
 
 #endif
