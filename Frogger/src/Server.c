@@ -39,30 +39,29 @@ int _tmain(int argc, TCHAR* argv[]) {
 		return -5;
 	}
 
-	// Initialize thread for game handler
-	if (!createThread(&(serverData.hGameThread), handleGame, &serverData)) {
-		_tprintf(_T("Error creating game handler thread"));
-		return -7;
-	}
-
 	// Initialize thread for communication with operators
 	if (!createThread(&(serverData.hCommsThread), handleComms, &serverData)) {
 		_tprintf(_T("Error creating comms handler thread"));
-		// TODO stop and free everything
-		return -9;
+		return -6;
+	}
+
+	// Initialize thread for clients communication
+	if (!createThread(&(serverData.hClientsComms), handleClientsComms, &serverData)) {
+		_tprintf(_T("Erro creating clients comms handler thread"));
+		return -7;
 	}
 
 	// TODO Commands Handler
 	handleCommands(&serverData);
 
 	// Proper shutdown server
-	WaitForSingleObject(serverData.hGameThread, INFINITE);
+	WaitForSingleObject(serverData.hClientsComms, INFINITE);
 	WaitForSingleObject(serverData.hCommsThread, INFINITE);
+	// TODO Inform clients that client is shutting down
 	FreeLibrary(hLib);
 	CloseHandle(serverData.hMutex);
 	CloseHandle(serverData.hCircBuf);
 	CloseHandle(serverData.hMemory);
-	// TODO Inform clients that client is shutting down
 
 	return 0;
 }
