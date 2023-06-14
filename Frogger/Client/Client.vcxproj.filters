@@ -32,6 +32,9 @@
     <ClCompile Include="Client.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ClientPaint.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Client.rc">

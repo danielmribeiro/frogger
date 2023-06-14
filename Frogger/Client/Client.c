@@ -456,46 +456,46 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 		PAINTSTRUCT ps;
 		HDC hdc = BeginPaint(hWnd, &ps);
 
-		// Call the function to draw the roads
-		DrawRoads(hdc, nRoads); // Change the number of roads here
-
-		DrawFrog(hdc, nRoads); //DrawFrogs
-
-		DrawCar(hdc, nRoads, 1,5); // Draw car
-		DrawCar(hdc, nRoads, 2, 3); // Draw car
-		DrawCar(hdc, nRoads, 3, 14); // Draw car
-		DrawCar(hdc, nRoads, 3, 15); // Draw car
-		DrawCar(hdc, nRoads, 3, 16); // Draw car
-		DrawCar(hdc, nRoads, 4, 10); // Draw car
-		DrawCar(hdc, nRoads, 5, 6); // Draw car
-		DrawCar(hdc, nRoads, 6, 2); // Draw car
-		DrawCar(hdc, nRoads, 6, 3); // Draw car
-		DrawCar(hdc, nRoads, 7, 17); // Draw car
-		DrawCar(hdc, nRoads, 8, 13); // Draw car
-
-		DrawObstacle(hdc, nRoads, 3, 13);
-		DrawObstacle(hdc, nRoads, 6, 4);
-
-		DrawOpponent(hdc, nRoads, 6, 7);
-
-		DrawStrTitle(hdc);
-		
-		TCHAR level[] = TEXT("Level 1");
-		DrawStrLevel(hdc, level);
-
-		TCHAR playerName[] = TEXT("Player1");
-		DrawStrPlayerName(hdc, 1, playerName);
-		TCHAR opponentName[] = TEXT("Player2");
-		DrawStrPlayerName(hdc, 2, opponentName);
-
-
-		TCHAR score[] = TEXT("Score: 50");
-		DrawStrScore(hdc, 1, score);
-		DrawStrScore(hdc, 2, score);
-
-		TCHAR time[] = TEXT("00:30");
-		DrawStrTime(hdc, time);
-		
+		//START TEMPORARY
+		ClientData cData;
+		cData.screen = COMPETITIVE_GAME;
+		cData.nRoads = 10;
+		//END TEMPORARY
+		switch (cData.screen) {
+		case WELCOME:
+			PaintScreenWelcome(hdc,hWnd);
+			break;
+		case MENU:
+			PaintScreenMenu(hdc, hWnd);
+			break;
+		case INDIVIDUAL_WAIT:
+			PaintScreenIndividualWait(hdc, hWnd);
+			break;
+		case INDIVIDUAL_GAME:
+			PaintScreenIndividualGame(hdc, hWnd, &cData);
+			break;
+		case INDIVIDUAL_WIN:
+			PaintScreenIndividualWin(hdc, hWnd, &cData);
+			break;
+		case INDIVIDUAL_LOST:
+			PaintScreenIndividualLost(hdc, hWnd, &cData);
+			break;
+		case COMPETITIVE_WAIT:
+			PaintScreenCompetitiveWait(hdc, hWnd);
+			break;
+		case COMPETITIVE_GAME:
+			PaintScreenCompetitiveGame(hdc, hWnd, &cData);
+			break;
+		case COMPETITIVE_WIN:
+			PaintScreenCompetitiveWin(hdc, hWnd, &cData);
+			break;
+		case COMPETITIVE_LOST:
+			PaintScreenCompetitiveLost(hdc, hWnd, &cData);
+			break;
+		default:
+			//TODO: BlackScreen
+			break;
+		}
 
 		EndPaint(hWnd, &ps);
 		break;

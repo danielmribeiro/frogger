@@ -134,6 +134,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Client.c" />
+    <ClCompile Include="ClientPaint.c" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Client.rc" />
