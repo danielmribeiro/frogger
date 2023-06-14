@@ -177,7 +177,7 @@ void DrawRoads(HDC hdc, int numRoads) {
 
 }
 
-void DrawFrog(HDC hdc, int numRoads) {
+void DrawFrogMap(HDC hdc, int numRoads) {
 	// Load the bitmap image
 	HBITMAP hBitmap = (HBITMAP)LoadImage(NULL, TEXT("Frog1.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
 	if (hBitmap != NULL) {
@@ -458,7 +458,7 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 
 		//START TEMPORARY
 		ClientData cData;
-		cData.screen = COMPETITIVE_WIN;
+		cData.screen = COMPETITIVE_GAMEOVER;
 		cData.nRoads=10;
 		cData.level=1;
 		cData.currentBitmap=1;
@@ -468,7 +468,7 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 		cData.frog[0].username = TEXT("Player 1");
 		cData.frog[1].pos.x = 1;
 		cData.frog[1].pos.y = 1;
-		cData.frog[1].score = 50;
+		cData.frog[1].score = 60;
 		cData.frog[1].username = TEXT("Player 2");
 		cData.car[0][0].dir = LEFT;
 		cData.car[0][0].pos.x = 3;
@@ -496,11 +496,8 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 		case INDIVIDUAL_GAME:
 			PaintScreenIndividualGame(hdc, hWnd, &cData);
 			break;
-		case INDIVIDUAL_WIN:
-			PaintScreenIndividualWin(hdc, hWnd, &cData);
-			break;
-		case INDIVIDUAL_LOST:
-			PaintScreenIndividualLost(hdc, hWnd, &cData);
+		case INDIVIDUAL_GAMEOVER:
+			PaintScreenIndividualGameover(hdc, hWnd, &cData);
 			break;
 		case COMPETITIVE_WAIT:
 			PaintScreenCompetitiveWait(hdc, hWnd);
@@ -508,11 +505,8 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 		case COMPETITIVE_GAME:
 			PaintScreenCompetitiveGame(hdc, hWnd, &cData);
 			break;
-		case COMPETITIVE_WIN:
-			PaintScreenCompetitiveWin(hdc, hWnd, &cData);
-			break;
-		case COMPETITIVE_LOST:
-			PaintScreenCompetitiveLost(hdc, hWnd, &cData);
+		case COMPETITIVE_GAMEOVER:
+			PaintScreenCompetitiveGameover(hdc, hWnd, &cData);
 			break;
 		default:
 			//TODO: BlackScreen

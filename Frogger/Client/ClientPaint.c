@@ -54,6 +54,97 @@ void DrawString(HDC hdc, HWND hWnd, int xStrPos, int yStrPos, int fontSize, cons
 }
 
 
+void DrawWinnerString(HDC hdc, HWND hWnd, int xStrPos, int yStrPos, int fontSize, ClientData* cData, int gamemode, COLORREF textColor, const TCHAR* font) {
+	TCHAR str1[256];
+	TCHAR str2[256];
+
+	if (gamemode == 0) {
+		_tcscpy_s(str1, 256, _T("Well Done "));
+		_tcscpy_s(str2, 256, cData->frog[0].username);
+	}
+	else if (gamemode == 1) {
+		if (cData->frog[0].score > cData->frog[1].score) {
+			_tcscpy_s(str1, 256, cData->frog[0].username);
+			_tcscpy_s(str2, 256, _T(" Wins!"));
+		}
+		else if(cData->frog[0].score < cData->frog[1].score) {
+			_tcscpy_s(str1, 256, cData->frog[1].username);
+			_tcscpy_s(str2, 256, _T(" Wins!"));
+		}
+		else {
+			_tcscpy_s(str1, 256, _T(""));
+			_tcscpy_s(str2, 256, _T("It's a tie!"));
+		}
+	}
+	// Calculate the required size for the concatenation
+	int size = _tcslen(str1) + _tcslen(str2) + 1;
+
+	// Allocate memory for the concatenation
+	TCHAR* result = (TCHAR*)malloc(size * sizeof(TCHAR));
+
+	if (result != NULL) {
+		// Copy the first string to the result
+		_tcscpy_s(result, size, str1);
+
+		// Concatenate the second string with the result
+		_tcscat_s(result, size, str2);
+
+		DrawString(hdc, hWnd, xStrPos, yStrPos, fontSize, result, textColor, font);
+	}
+	else {
+		printf("Failed to allocate memory.\n");
+	}
+}
+
+void DrawFrog(HDC hdc, HWND hWnd, int xStrPos, int yStrPos, int currentBitmap, int frogID) {
+	HBITMAP hBitmap;
+	switch (currentBitmap) {
+	case 0:
+		if (frogID == 0) {
+			hBitmap = (HBITMAP)LoadImage(NULL, TEXT("Frog1.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+		}
+		else {
+			hBitmap = (HBITMAP)LoadImage(NULL, TEXT("Frog2.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+		}
+		break;
+	case 1:
+		if (frogID == 0) {
+			hBitmap = (HBITMAP)LoadImage(NULL, TEXT("Frog1.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+		}
+		else {
+			hBitmap = (HBITMAP)LoadImage(NULL, TEXT("Frog2.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+		}
+		break;
+	default:
+		if (frogID == 0) {
+			hBitmap = (HBITMAP)LoadImage(NULL, TEXT("Frog1.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+		}
+		else {
+			hBitmap = (HBITMAP)LoadImage(NULL, TEXT("Frog2.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+		}
+		break;
+	}
+	
+	if (hBitmap != NULL) {
+		// Create a compatible device context
+		HDC hMemDC = CreateCompatibleDC(hdc);
+		if (hMemDC != NULL) {
+			// Select the bitmap into the device context
+			HBITMAP hOldBitmap = (HBITMAP)SelectObject(hMemDC, hBitmap);
+
+			// Get the size of the bitmap
+			BITMAP bmp;
+			GetObject(hBitmap, sizeof(BITMAP), &bmp);
+
+			// Draw the bitmap onto the device context
+			BitBlt(hdc, xStrPos, yStrPos, bmp.bmWidth, bmp.bmHeight, hMemDC, 0, 0, SRCCOPY);
+
+			// Restore the old bitmap and clean up resources
+			SelectObject(hMemDC, hOldBitmap);
+			DeleteDC(hMemDC);
+		}
+	}
+}
 
 
 //SCREEN
@@ -103,19 +194,11 @@ void PaintScreenIndividualGame(HDC hdc, HWND hWnd, ClientData* cData) {
 
 }
 
-void PaintScreenIndividualWin(HDC hdc, HWND hWnd, ClientData* cData) {
-	DrawBackgroundColor(hdc, hWnd, GOLD);
-	//DrawString you win
-	//Drawfrog1
-	//DrawString username1
-	//DrawString score1
-	//GoToMenuButton
-	DrawString(hdc, hWnd, 0, 250, 20, TEXT("FROGGER"), RED, FONT_COMIC_SANS_MS);
-}
-
-void PaintScreenIndividualLost(HDC hdc, HWND hWnd, ClientData* cData) {
-	DrawBackgroundColor(hdc, hWnd, RED);
-	//DrawString you lost
+void PaintScreenIndividualGameover(HDC hdc, HWND hWnd, ClientData* cData) {
+	DrawBackgroundColor(hdc, hWnd, DARK_GREEN);
+	DrawString(hdc, hWnd, 0, -200, 50, TEXT("GAMEOVER"), RED, FONT_ARIAL);
+	DrawWinnerString(hdc, hWnd, 0, -100, 20, cData, 0, GOLD, FONT_COMIC_SANS_MS);
+	DrawFrog(hdc, hWnd, 30, 300, cData->currentBitmap,0);
 	//Drawfrog1
 	//DrawString username1
 	//DrawString score1
@@ -152,10 +235,10 @@ void PaintScreenCompetitiveGame(HDC hdc, HWND hWnd, ClientData* cData) {
 
 	//-----------------------DELETE THIS-:-----------------------------------
 
-	//// Call the function to draw the roads
+	// Call the function to draw the roads
 	//DrawRoads(hdc, cData->nRoads); // Change the number of roads here
 
-	//DrawFrog(hdc, cData->nRoads); //DrawFrogs
+	//DrawFrogMap(hdc, cData->nRoads); //DrawFrogs
 
 	//DrawCar(hdc, cData->nRoads, 1, 5); // Draw car
 	//DrawCar(hdc, cData->nRoads, 2, 3); // Draw car
@@ -195,24 +278,10 @@ void PaintScreenCompetitiveGame(HDC hdc, HWND hWnd, ClientData* cData) {
 	//-------------END DELETE---------------------
 }
 
-void PaintScreenCompetitiveWin(HDC hdc, HWND hWnd, ClientData* cData) {
-	DrawBackgroundColor(hdc, hWnd, GOLD);
-	//DrawString Winner + username
-	//DrawString you win
-	//Drawfrog1
-	//DrawString username1
-	//DrawString score1
-	//Drawfrog2
-	//DrawString username2
-	//DrawString score2
-	//GoToMenuButton
-	DrawString(hdc, hWnd, 0, 250, 20, TEXT("FROGGER"), RED, FONT_COMIC_SANS_MS);
-}
-
-void PaintScreenCompetitiveLost(HDC hdc, HWND hWnd, ClientData* cData) {
-	DrawBackgroundColor(hdc, hWnd, RED);
-	//DrawString Winner + username
-	//DrawString you lost
+void PaintScreenCompetitiveGameover(HDC hdc, HWND hWnd, ClientData* cData) {
+	DrawBackgroundColor(hdc, hWnd, DARK_GREEN);
+	DrawString(hdc, hWnd, 0, -200, 50, TEXT("GAMEOVER"), RED, FONT_ARIAL);
+	DrawWinnerString(hdc, hWnd, 0, -100, 20, cData, 1, GOLD, FONT_COMIC_SANS_MS);
 	//Drawfrog1
 	//DrawString username1
 	//DrawString score1

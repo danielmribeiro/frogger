@@ -1,8 +1,11 @@
 #pragma once
 
-#include "resource.h"
+#include "Resource.h"
 #include <windows.h>
 #include <tchar.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define MAX_LANES 10
 #define MAX_CARS 8
@@ -13,12 +16,10 @@ typedef enum {
 	MENU,
 	INDIVIDUAL_WAIT,
 	INDIVIDUAL_GAME,
-	INDIVIDUAL_WIN,
-	INDIVIDUAL_LOST,
+	INDIVIDUAL_GAMEOVER,
 	COMPETITIVE_WAIT,
 	COMPETITIVE_GAME,
-	COMPETITIVE_WIN,
-	COMPETITIVE_LOST
+	COMPETITIVE_GAMEOVER
 } ClientScreen;
 
 typedef struct {
@@ -73,15 +74,15 @@ typedef struct {
 //ELEMENTS
 void DrawBackgroundColor(HDC hdc, HWND hWnd, COLORREF color);
 void DrawString(HDC hdc, HWND hWnd, int xStrPos, int yStrPos, int fontSize, const TCHAR* text, COLORREF textColor, const TCHAR* font);
+void DrawWinnerString(HDC hdc, HWND hWnd, int xStrPos, int yStrPos, int fontSize, ClientData* cData, int gamemode, COLORREF textColor, const TCHAR* font);
+void DrawFrog(HDC hdc, HWND hWnd, int xStrPos, int yStrPos, int currentBitmap, int frogID);
 
 //SCREEN
 void PaintScreenWelcome(HDC hdc, HWND hWnd);
 void PaintScreenMenu(HDC hdc, HWND hWnd);
 void PaintScreenIndividualWait(HDC hdc, HWND hWnd);
 void PaintScreenIndividualGame(HDC hdc, HWND hWnd, ClientData* cData);
-void PaintScreenIndividualWin(HDC hdc, HWND hWnd, ClientData* cData);
-void PaintScreenIndividualLost(HDC hdc, HWND hWnd, ClientData* cData);
+void PaintScreenIndividualGameover(HDC hdc, HWND hWnd, ClientData* cData);
 void PaintScreenCompetitiveWait(HDC hdc, HWND hWnd);
 void PaintScreenCompetitiveGame(HDC hdc, HWND hWnd, ClientData* cData);
-void PaintScreenCompetitiveWin(HDC hdc, HWND hWnd, ClientData* cData);
-void PaintScreenCompetitiveLost(HDC hdc, HWND hWnd, ClientData* cData);
+void PaintScreenCompetitiveGameover(HDC hdc, HWND hWnd, ClientData* cData);
