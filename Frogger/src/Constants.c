@@ -5,6 +5,7 @@ bool initServerData(ServerData* s, bool isServer) {
 	s->hMemory = NULL;
 	s->speed = -1;
 	s->lanes = -1;
+	s->status = WAITING_FOR_GAME;
 	s->gamemode = -1;
 	s->g.exit = false;
 
@@ -18,9 +19,19 @@ bool initServerData(ServerData* s, bool isServer) {
 			_tprintf(_T("Error creating game update event. Shutting down"));
 			return false;
 		}
+
+		if (!(s->hEventServerShutdown = CreateEvent(NULL, TRUE, FALSE, EVENT_SERVER_SHUTDOWN))) {
+			_tprintf(_T("Error creating game update event. Shutting down"));
+			return false;
+		}
 	}
 	else {
 		if (!(s->hEventGameIsUpdated = OpenEvent(EVENT_ALL_ACCESS, FALSE, EVENT_GAME_IS_UPDATED))) {
+			_tprintf(_T("Error creating game update event. Shutting down"));
+			return false;
+		}
+
+		if (!(s->hEventServerShutdown = OpenEvent(EVENT_ALL_ACCESS, FALSE, EVENT_SERVER_SHUTDOWN))) {
 			_tprintf(_T("Error creating game update event. Shutting down"));
 			return false;
 		}
