@@ -87,6 +87,14 @@ typedef struct {
 	HANDLE hPipe;
 } ClientPipe;
 
+// Operator Command Reader Structure
+typedef struct {
+	int* status;
+	HANDLE* hEventHasCommand, * hCommandMutex;
+	TCHAR* command;
+} CommandReaderData;
+
+
 //REGISTRY
 #define KEYPATH _T("SOFTWARE\\Frogger\\")
 #define LANES_KEY_NAME _T("NUMBEROFLANES")
