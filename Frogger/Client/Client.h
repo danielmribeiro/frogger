@@ -45,7 +45,6 @@ typedef struct {
 	Car car[MAX_LANES][MAX_CARS];
 	Obstacle obstacle[MAX_LANES][MAX_OBSTACLES];
 	int time;
-	int numberOfPlayers;
 }ClientData;
 
 #define WHITE RGB(255,255,255)

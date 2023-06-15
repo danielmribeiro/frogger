@@ -152,7 +152,7 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 		cData.screen = COMPETITIVE_GAME;
 		cData.nRoads = 10;
 		cData.level = 1;
-		cData.currentBitmap = 1;
+		cData.currentBitmap = 0;
 		cData.frog[0].pos.x = 1;
 		cData.frog[0].pos.y = 1;
 		cData.frog[0].score = 50;
@@ -167,7 +167,6 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 		cData.car[0][1].dir = LEFT;
 		cData.car[0][1].pos.x = 4;
 		cData.car[0][1].pos.y = 4;
-		cData.numberOfPlayers = 2;
 		cData.obstacle[0][0].pos.x = 5;
 		cData.obstacle[0][0].pos.y = 5;
 		cData.obstacle[0][1].pos.x = 6;
@@ -178,7 +177,7 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 	case WM_CLOSE: //Clicar para fechar a janela na cri
 	case WM_DESTROY: // Destruir a janela e terminar o programa 
 		// "PostQuitMessage(Exit Status)"
-		if (MessageBox(hWnd, TEXT("Deseja fechar a jantela?"), TEXT("Confirma��o"), MB_YESNO | MB_ICONQUESTION) == IDYES) { // Display a message box to confirm closing the window
+		if (MessageBox(hWnd, TEXT("Do you want to exit?"), TEXT("Confirmation"), MB_YESNO | MB_ICONQUESTION) == IDYES) { // Display a message box to confirm closing the window
 			PostQuitMessage(0);
 		}
 		break;
@@ -189,19 +188,19 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 			// Handle the key press here
 			switch (key) {
 			case VK_LEFT:
-				cData.frog[0].pos.x = cData.frog[0].pos.x--;
+				cData.frog[0].pos.x--;
 				//TODO communicate
 				break;
 			case VK_RIGHT:
-				cData.frog[0].pos.x = cData.frog[0].pos.x++;
+				cData.frog[0].pos.x++;
 				//TODO communicate
 				break;
 			case VK_UP:
-				cData.frog[0].pos.y = cData.frog[0].pos.y--;
+				cData.frog[0].pos.y--;
 				//TODO communicate
 				break;
 			case VK_DOWN:
-				cData.frog[0].pos.y = cData.frog[0].pos.y++;
+				cData.frog[0].pos.y++;
 				//TODO communicate
 				break;
 				// Add cases for other keys you want to handle
@@ -210,6 +209,7 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 				// ...
 				break;
 			}
+			InvalidateRect(hWnd, NULL, TRUE);
 			UpdateWindow(hWnd);
 		}
 		break;
@@ -218,33 +218,6 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 	{
 		PAINTSTRUCT ps;
 		HDC hdc = BeginPaint(hWnd, &ps);
-
-		//START TEMPORARY
-		ClientData cData;
-		cData.screen = COMPETITIVE_GAMEOVER;
-		cData.nRoads = 10;
-		cData.level = 1;
-		cData.currentBitmap = 1;
-		cData.frog[0].pos.x = 1;
-		cData.frog[0].pos.y = 1;
-		cData.frog[0].score = 50;
-		cData.frog[0].username = TEXT("Player 1");
-		cData.frog[1].pos.x = 1;
-		cData.frog[1].pos.y = 1;
-		cData.frog[1].score = 60;
-		cData.frog[1].username = TEXT("Player 2");
-		cData.car[0][0].dir = LEFT;
-		cData.car[0][0].pos.x = 3;
-		cData.car[0][0].pos.y = 4;
-		cData.car[0][1].dir = LEFT;
-		cData.car[0][1].pos.x = 6;
-		cData.car[0][1].pos.y = 4;
-		cData.obstacle[0][0].pos.x = 3;
-		cData.obstacle[0][0].pos.y = 4;
-		cData.obstacle[0][1].pos.x = 5;
-		cData.obstacle[0][1].pos.y = 6;
-		cData.time = 30;
-		//END TEMPORARY
 
 		switch (cData.screen) {
 		case WELCOME:

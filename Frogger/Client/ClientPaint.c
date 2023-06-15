@@ -114,10 +114,10 @@ void DrawFrog(HDC hdc, HWND hWnd, int bitmapX, int bitmapY, int currentBitmap, i
 		break;
 	case 1:
 		if (frogID == 0) {
-			hBitmap = (HBITMAP)LoadImage(NULL, TEXT("Frog1.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+			hBitmap = (HBITMAP)LoadImage(NULL, TEXT("Frog2.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
 		}
 		else {
-			hBitmap = (HBITMAP)LoadImage(NULL, TEXT("Opponent1.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+			hBitmap = (HBITMAP)LoadImage(NULL, TEXT("Opponent2.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
 		}
 		break;
 	default:
@@ -226,16 +226,56 @@ void DrawMapElement(HDC hdc, HWND hWnd, int elementType, int posX, int posY, Cli
 	HBITMAP hBitmap=NULL;
 	switch (elementType) {
 	case 0: //Frog
-		hBitmap = (HBITMAP)LoadImage(NULL, TEXT("Frog1.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);/////////////////FALTA DECIDIR O BITMAP!
+		switch (cData->currentBitmap) {
+		case 0:
+			hBitmap = (HBITMAP)LoadImage(NULL, TEXT("Frog1.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+			break;
+		case 1:
+			hBitmap = (HBITMAP)LoadImage(NULL, TEXT("Frog2.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+			break;
+		default:
+			hBitmap = (HBITMAP)LoadImage(NULL, TEXT("Frog1.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+			break;
+		}
 		break;
 	case 1: //OpponentFrog
-		hBitmap = (HBITMAP)LoadImage(NULL, TEXT("Opponent1.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);/////////////////FALTA DECIDIR O BITMAP!
+		switch (cData->currentBitmap) {
+		case 0:
+			hBitmap = (HBITMAP)LoadImage(NULL, TEXT("Opponent1.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+			break;
+		case 1:
+			hBitmap = (HBITMAP)LoadImage(NULL, TEXT("Opponent2.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+			break;
+		default:
+			hBitmap = (HBITMAP)LoadImage(NULL, TEXT("Opponent1.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+			break;
+		}
 		break;
 	case 2: //Car
-		hBitmap = (HBITMAP)LoadImage(NULL, TEXT("Car1.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);/////////////////FALTA DECIDIR O BITMAP!
+		switch (cData->currentBitmap) {
+		case 0:
+			hBitmap = (HBITMAP)LoadImage(NULL, TEXT("Car1.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+			break;
+		case 1:
+			hBitmap = (HBITMAP)LoadImage(NULL, TEXT("Car2.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+			break;
+		default:
+			hBitmap = (HBITMAP)LoadImage(NULL, TEXT("Car1.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+			break;
+		}
 		break;
 	case 3: //Obstacle
-		hBitmap = (HBITMAP)LoadImage(NULL, TEXT("Obstacle1.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);/////////////////FALTA DECIDIR O BITMAP!
+		switch (cData->currentBitmap) {
+		case 0:
+			hBitmap = (HBITMAP)LoadImage(NULL, TEXT("Obstacle1.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+			break;
+		case 1:
+			hBitmap = (HBITMAP)LoadImage(NULL, TEXT("Obstacle2.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+			break;
+		default:
+			hBitmap = (HBITMAP)LoadImage(NULL, TEXT("Obstacle1.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+			break;
+		}
 		break;
 	default:
 		break;
