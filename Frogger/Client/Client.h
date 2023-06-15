@@ -45,6 +45,7 @@ typedef struct {
 	Car car[MAX_LANES][MAX_CARS];
 	Obstacle obstacle[MAX_LANES][MAX_OBSTACLES];
 	int time;
+	int numberOfPlayers;
 }ClientData;
 
 #define WHITE RGB(255,255,255)
@@ -62,8 +63,13 @@ typedef struct {
 //ELEMENTS
 void DrawBackgroundColor(HDC hdc, HWND hWnd, COLORREF color);
 void DrawString(HDC hdc, HWND hWnd, int xStrPos, int yStrPos, int fontSize, const TCHAR* text, COLORREF textColor, const TCHAR* font);
+void DrawInt(HDC hdc, HWND hWnd, int xStrPos, int yStrPos, int fontSize, int number, COLORREF textColor, const TCHAR* font);
 void DrawWinnerString(HDC hdc, HWND hWnd, int xStrPos, int yStrPos, int fontSize, ClientData* cData, int gamemode, COLORREF textColor, const TCHAR* font);
-void DrawFrog(HDC hdc, HWND hWnd, int xStrPos, int yStrPos, int currentBitmap, int frogID);
+void DrawFrog(HDC hdc, HWND hWnd, int bitmapX, int bitmapY, int currentBitmap, int frogID);
+void DrawRoads(HDC hdc, int numRoads);
+void DrawMapElement(HDC hdc, HWND hWnd, int elementType, int posX, int posY, ClientData* cData);
+void DrawMap(HDC hdc, HWND hWnd, ClientData* cData);
+
 
 //SCREEN
 void PaintScreenWelcome(HDC hdc, HWND hWnd);
