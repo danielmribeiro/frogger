@@ -311,10 +311,10 @@ DWORD WINAPI handleClientsComms(LPVOID p) {
 	HANDLE hServerPipe = NULL, hClientsPipe[2] = { { NULL }, {NULL} };
 	DWORD clientsPIDS[2] = { 0 ,0 };
 	TCHAR pipeName[50];
-	DWORD pid, readPipeRes;
+	DWORD pid, bytesRead;
 	int clientsConnected = 0;
 
-	if (!(hServerPipe = CreateNamedPipe(SERVER_PIPE,
+	if ((hServerPipe = CreateNamedPipe(SERVER_PIPE,
 		PIPE_ACCESS_DUPLEX,
 		PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT,
 		PIPE_UNLIMITED_INSTANCES,
@@ -322,31 +322,22 @@ DWORD WINAPI handleClientsComms(LPVOID p) {
 		4096,
 		0,
 		NULL
-	))) {
+	)) == INVALID_HANDLE_VALUE) {
 		_tprintf(_T("Error creating server pipe\n"));
 		s->status = 1;
 		return -1;
 	}
 
-	hServerPipe = CreateNamedPipe(SERVER_PIPE,
-		PIPE_ACCESS_DUPLEX,
-		PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
-		PIPE_UNLIMITED_INSTANCES,
-		4096,
-		4096,
-		0,
-		NULL);
-
 	while (s->status != SHUTDOWN) {
 		// Wait for message from a client
-		ReadFile(hServerPipe, &pid, sizeof(pid), NULL, NULL);
-		readPipeRes = WaitForSingleObject(hServerPipe, 1000);
+		do
+			bytesRead = ReadFile(hServerPipe, &pid, sizeof(pid), NULL, NULL);
+		while (bytesRead == 0);
 
-		if (readPipeRes == WAIT_TIMEOUT)
-			continue;
+		_tprintf(_T("Message: %lu\n"), pid);
 
 		// Create client pipe
-		switch (pid) {
+		/*switch (pid) {
 		case CLIENT_CONNECTION:
 			sprintf_s(pipeName, sizeof(pipeName), CLIENT_PIPE, pid);
 			clientsPIDS[clientsConnected] = pid;
@@ -366,7 +357,7 @@ DWORD WINAPI handleClientsComms(LPVOID p) {
 			}
 			clientsConnected++;
 			break;
-		}
+		}*/
 
 		pid = 0;
 		WriteFile(hServerPipe, &pid, sizeof(pid), NULL, NULL);

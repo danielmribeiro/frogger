@@ -253,7 +253,7 @@ int _tmain(int argc, TCHAR* argv[]) {
 	}
 
 	if (!(s.hMemory = openSharedMemory(SERVER_MEMORY))) {
-		_tprintf(_T("Error creating shared memory file! Shutting down...\n"));
+		_tprintf(_T("Error open shared memory file! Shutting down...\n"));
 		return -3;
 	}
 

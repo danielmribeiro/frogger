@@ -1,11 +1,15 @@
-#pragma once
+#ifndef _CLIENT_H_
+#define _CLIENT_H_
 
-#include "Resource.h"
 #include <windows.h>
 #include <tchar.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <tchar.h>
+#include "framework.h"
+#include "Resource.h"
+#include "ClientComms.h"
 
 #define MAX_LANES 10
 #define MAX_CARS 8
@@ -21,22 +25,6 @@ typedef enum {
 	COMPETITIVE_GAME,
 	COMPETITIVE_GAMEOVER
 } ClientScreen;
-
-typedef struct {
-	int x, y;
-} Position;
-
-typedef enum {
-	RIGHT,
-	LEFT,
-	FRONT,
-	BACK
-} Direction;
-
-typedef struct {
-	Position pos;
-	Direction dir;
-} Car;
 
 typedef struct {
 	Position pos;
@@ -86,3 +74,5 @@ void PaintScreenIndividualGameover(HDC hdc, HWND hWnd, ClientData* cData);
 void PaintScreenCompetitiveWait(HDC hdc, HWND hWnd);
 void PaintScreenCompetitiveGame(HDC hdc, HWND hWnd, ClientData* cData);
 void PaintScreenCompetitiveGameover(HDC hdc, HWND hWnd, ClientData* cData);
+
+#endif

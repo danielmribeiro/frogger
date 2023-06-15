@@ -1,6 +1,3 @@
-#include <Windows.h>
-#include <tchar.h>
-#include "framework.h"
 #include "Client.h"
 
 /* ===================================================== */
@@ -36,7 +33,14 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nC
 	HWND hWnd; // hWnd é o handler da janela, gerado mais abaixo por CreateWindow()
 	MSG lpMsg; // MSG é uma estrutura definida no Windows para as mensagens
 	WNDCLASSEX wcApp; // WNDCLASSEX é uma estrutura cujos membros servem para definir as características da classe da janela
+	ClientCommsData communicationData;
+	GameInfo g;
 
+	// TODO Check if the server is running
+	if (!isServerRunning(&communicationData, &g))
+		return -1;
+
+	// TODO CreateThread for communication with server
 
 // ============================================================================
 // 1. Definição das características da janela "wcApp" 
@@ -55,15 +59,15 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nC
 	wcApp.cbWndExtra = 0; // Livre, para uso particular
 	wcApp.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);  // "hbrBackground" = handler para "brush" de pintura do fundo da janela. Devolvido por  "GetStockObject".Neste caso o fundo será branco
 
-// ============================================================================
-// 2. Registar a classe "wcApp" no Windows
-// ============================================================================
+	// ============================================================================
+	// 2. Registar a classe "wcApp" no Windows
+	// ============================================================================
 	if (!RegisterClassEx(&wcApp))
 		return(0);
 
-// ============================================================================
-// 3. Criar a janela
-// ============================================================================
+	// ============================================================================
+	// 3. Criar a janela
+	// ============================================================================
 	hWnd = CreateWindow(
 		szProgName,// Nome da janela (programa) definido acima
 		TEXT("Frogger"), // Texto que figura na barra do título
@@ -75,39 +79,43 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nC
 		(HWND)HWND_DESKTOP, // handle da janela pai (se se criar uma a partir de outra) ou HWND_DESKTOP se a janela for a primeira, criada a partir do "desktop"
 		(HMENU)NULL, // handle do menu da janela (se tiver menu)
 		(HINSTANCE)hInst, // handle da instância do programa actual ("hInst" é passado num dos parâmetros de WinMain()
-		0); // Não há parâmetros adicionais para a janela
+		&g); // Não há parâmetros adicionais para a janela
 
-// ============================================================================
-// 4. Mostrar a janela
-// ============================================================================
+	// ============================================================================
+	// 4. Mostrar a janela
+	// ============================================================================
 	ShowWindow(hWnd, nCmdShow); // "hWnd"= handler da janela, devolvido por "CreateWindow"; "nCmdShow"= modo de exibição (p.e. normal/modal); é passado como parâmetro de WinMain()
 	UpdateWindow(hWnd); // Refrescar a janela (Windows envia à janela uma mensagem para pintar, mostrar dados, (refrescar)… 
 
-// ============================================================================
-// 5. Loop de Mensagens
-// ============================================================================
-// O Windows envia mensagens às janelas (programas). Estas mensagens ficam numa fila de espera até que GetMessage(...) possa ler "a mensagem seguinte"	
-// Parâmetros de "getMessage":
-// 1)"&lpMsg"=Endereço de uma estrutura do tipo MSG ("MSG lpMsg" ja foi declarada no início de WinMain()):
-//			HWND hwnd		handler da janela a que se destina a mensagem
-//			UINT message		Identificador da mensagem
-//			WPARAM wParam		Parâmetro, p.e. código da tecla premida
-//			LPARAM lParam		Parâmetro, p.e. se ALT também estava premida
-//			DWORD time		Hora a que a mensagem foi enviada pelo Windows
-//			POINT pt		Localização do mouse (x, y) 
-// 2)handle da window para a qual se pretendem receber mensagens (=NULL se se pretendem receber as mensagens para todas as janelas pertencentes à thread actual)
-// 3)Código limite inferior das mensagens que se pretendem receber
-// 4)Código limite superior das mensagens que se pretendem receber
+	// ============================================================================
+	// 5. Loop de Mensagens
+	// ============================================================================
+	// O Windows envia mensagens às janelas (programas). Estas mensagens ficam numa fila de espera até que GetMessage(...) possa ler "a mensagem seguinte"	
+	// Parâmetros de "getMessage":
+	// 1)"&lpMsg"=Endereço de uma estrutura do tipo MSG ("MSG lpMsg" ja foi declarada no início de WinMain()):
+	//			HWND hwnd		handler da janela a que se destina a mensagem
+	//			UINT message		Identificador da mensagem
+	//			WPARAM wParam		Parâmetro, p.e. código da tecla premida
+	//			LPARAM lParam		Parâmetro, p.e. se ALT também estava premida
+	//			DWORD time		Hora a que a mensagem foi enviada pelo Windows
+	//			POINT pt		Localização do mouse (x, y) 
+	// 2)handle da window para a qual se pretendem receber mensagens (=NULL se se pretendem receber as mensagens para todas as janelas pertencentes à thread actual)
+	// 3)Código limite inferior das mensagens que se pretendem receber
+	// 4)Código limite superior das mensagens que se pretendem receber
 
-// NOTA: GetMessage() devolve 0 quando for recebida a mensagem de fecho da janela, terminando então o loop de recepção de mensagens, e o programa 
+	// NOTA: GetMessage() devolve 0 quando for recebida a mensagem de fecho da janela, terminando então o loop de recepção de mensagens, e o programa 
 	while (GetMessage(&lpMsg, NULL, 0, 0)) {
 		TranslateMessage(&lpMsg);// Pré-processamento da mensagem (p.e. obter código ASCII da tecla premida)
 		DispatchMessage(&lpMsg); // Enviar a mensagem traduzida de volta ao Windows, que aguarda até que a possa reenviar à função de tratamento da janela, CALLBACK TrataEventos (abaixo)
 	}
 
-// ============================================================================
-// 6. Fim do programa
-// ============================================================================
+	// ============================================================================
+	// 6. Fim do programa
+	// ============================================================================
+		// TODO close all handles and wait for communication thread to exit
+	WaitForSingleObject(communicationData.hCommunicationThread, INFINITE);
+	DisconnectNamedPipe(communicationData.hServerPipe);
+	CloseHandle(communicationData.hServerPipe);
 	return((int)lpMsg.wParam); // Retorna sempre o parâmetro wParam da estrutura lpMsg
 }
 
@@ -129,7 +137,7 @@ void DrawRoads(HDC hdc, int numRoads) {
 
 		// Determine the road color
 		COLORREF roadColor;
-		if (i == 0 || i >= numRoads-1) {
+		if (i == 0 || i >= numRoads - 1) {
 			// First and last road color is green
 			roadColor = RGB(48, 104, 68);
 		}
@@ -217,10 +225,10 @@ void DrawCar(HDC hdc, int numRoads, int yCell, int xCell) {
 			// Select the bitmap into the device context
 			HBITMAP hOldBitmap = (HBITMAP)SelectObject(hMemDC, hBitmap);
 
-			
+
 			// Define the coordinates for the car image
 			int carX = (xCell * 30) + 10;  // Change the X-coordinate here
-			int carY = (yCell * 30) +10;  // Change the Y-coordinate here
+			int carY = (yCell * 30) + 10;  // Change the Y-coordinate here
 
 			// Get the size of the bitmap
 			BITMAP bmp;
@@ -332,7 +340,7 @@ void DrawStrTime(HDC hdc, TCHAR* time) {
 
 void DrawStrTitle(HDC hdc) {
 	const TCHAR* text = _T("FROGGER");
-	int x = 640/2/2;
+	int x = 640 / 2 / 2;
 	int y = 330;
 	SetTextColor(hdc, RGB(255, 255, 255)); // Set text color to white
 	SetBkColor(hdc, RGB(0, 0, 0)); // Set background color to black
@@ -393,7 +401,7 @@ void DrawStrPlayerName(HDC hdc, int playerID, TCHAR* playerName) {
 		DEFAULT_PITCH | FF_DONTCARE, _T("Courier New"));
 	HFONT hOldFont = (HFONT)SelectObject(hdc, hFont);
 
-	TextOut(hdc, x+35, y+7, playerName, _tcslen(playerName));
+	TextOut(hdc, x + 35, y + 7, playerName, _tcslen(playerName));
 
 	SelectObject(hdc, hOldFont);
 	DeleteObject(hFont);
@@ -441,13 +449,23 @@ void DrawStrScore(HDC hdc, int playerID, TCHAR* score) {
 // Estas mensagens são identificadas por constantes (p.e. WM_DESTROY, WM_CHAR, WM_KEYDOWN, WM_PAINT...) definidas em windows.h
 // ============================================================================
 LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
-	int nRoads = 10;//number of roads
+	GameInfo* g = NULL;
+
+	if (messg != WM_CREATE)
+		g = (GameInfo*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 
 	switch (messg) {
+	case WM_CREATE:
+	{
+		CREATESTRUCT* cs = (CREATESTRUCT*)lParam;
+		g = (GameInfo*)cs->lpCreateParams;
+		SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)g);
+		break;
+	}
 	case WM_CLOSE: //Clicar para fechar a janela na cri
 	case WM_DESTROY: // Destruir a janela e terminar o programa 
 		// "PostQuitMessage(Exit Status)"
-		if(MessageBox(hWnd, TEXT("Deseja fechar a jantela?"), TEXT("Confirmação"), MB_YESNO | MB_ICONQUESTION) == IDYES){ // Display a message box to confirm closing the window
+		if (MessageBox(hWnd, TEXT("Deseja fechar a jantela?"), TEXT("Confirmação"), MB_YESNO | MB_ICONQUESTION) == IDYES) { // Display a message box to confirm closing the window
 			PostQuitMessage(0);
 		}
 		break;
@@ -459,9 +477,9 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 		//START TEMPORARY
 		ClientData cData;
 		cData.screen = COMPETITIVE_GAMEOVER;
-		cData.nRoads=10;
-		cData.level=1;
-		cData.currentBitmap=1;
+		cData.nRoads = 10;
+		cData.level = 1;
+		cData.currentBitmap = 1;
 		cData.frog[0].pos.x = 1;
 		cData.frog[0].pos.y = 1;
 		cData.frog[0].score = 50;
@@ -485,7 +503,7 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 
 		switch (cData.screen) {
 		case WELCOME:
-			PaintScreenWelcome(hdc,hWnd);
+			PaintScreenWelcome(hdc, hWnd);
 			break;
 		case MENU:
 			PaintScreenMenu(hdc, hWnd);
@@ -519,7 +537,7 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 	default:
 		// Neste exemplo, para qualquer outra mensagem (p.e. "minimizar","maximizar","restaurar") não é efectuado nenhum processamento, apenas se segue o "default" do Windows
 		return(DefWindowProc(hWnd, messg, wParam, lParam));
-		break; // break tecnicamente desnecessário por causa do return
 	}
-	return(0);
+
+	return 0;
 }

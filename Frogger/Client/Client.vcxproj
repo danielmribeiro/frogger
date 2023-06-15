@@ -127,13 +127,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\src\Base.h" />
     <ClInclude Include="Client.h" />
+    <ClInclude Include="ClientComms.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Client.c" />
+    <ClCompile Include="ClientComms.c" />
     <ClCompile Include="ClientPaint.c" />
   </ItemGroup>
   <ItemGroup>
