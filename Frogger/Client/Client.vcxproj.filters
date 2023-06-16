@@ -72,5 +72,17 @@
     <Image Include="Opponent1.bmp">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="Frog2.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Opponent2.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Car2.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Obstacle2.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

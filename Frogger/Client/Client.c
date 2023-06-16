@@ -151,7 +151,7 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 		g = (GameInfo*)cs->lpCreateParams;
 		SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)g);
 
-		cData.screen = COMPETITIVE_GAMEOVER;
+		cData.screen = INDIVIDUAL_GAME;
 		cData.nRoads = 10;
 		cData.level = 1;
 		cData.currentBitmap = 0;
@@ -218,16 +218,7 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 	}
 	case WM_COMMAND:
 		switch (LOWORD(wParam)) {
-		case IDC_MENU_BUTTON:
-		{
-			cData.screen = MENU;
-			HWND hMenuButton = GetDlgItem(hWnd, IDC_MENU_BUTTON);
-			DestroyWindow(hMenuButton);
-
-			InvalidateRect(hWnd, NULL, TRUE);
-			UpdateWindow(hWnd);
-			break;
-		}
+		
 		case IDC_COMPETITIVE_BUTTON:
 		{
 			hUsernameTextbox = GetDlgItem(hWnd, IDC_USERNAME_TEXTBOX);
@@ -263,6 +254,29 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 			DestroyWindow(hUsernameTextbox);
 			DestroyWindow(hCompetitiveButton);
 			DestroyWindow(hIndividualButton);
+
+			InvalidateRect(hWnd, NULL, TRUE);
+			UpdateWindow(hWnd);
+			break;
+		}
+		case IDC_MENU_BUTTON:
+		{
+			cData.screen = MENU;
+			HWND hMenuButton = GetDlgItem(hWnd, IDC_MENU_BUTTON);
+			DestroyWindow(hMenuButton);
+
+			InvalidateRect(hWnd, NULL, TRUE);
+			UpdateWindow(hWnd);
+			break;
+		}
+		case IDC_BITMAP_BUTTON:
+		{
+			if (cData.currentBitmap == 0) {
+				cData.currentBitmap = 1;
+			}
+			else {
+				cData.currentBitmap = 0;
+			}
 
 			InvalidateRect(hWnd, NULL, TRUE);
 			UpdateWindow(hWnd);

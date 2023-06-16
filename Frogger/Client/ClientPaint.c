@@ -221,11 +221,11 @@ void DrawRoads(HDC hdc, int numRoads) {
 		COLORREF roadColor;
 		if (i == 0 || i >= numRoads - 1) {
 			// First and last road color is green
-			roadColor = RGB(48, 104, 68);
+			roadColor = GREEN;
 		}
 		else {
 			// Other roads color is black
-			roadColor = RGB(58, 49, 47);
+			roadColor = DARK_BROWN;
 		}
 
 		// Draw the road
@@ -236,7 +236,7 @@ void DrawRoads(HDC hdc, int numRoads) {
 
 		// Draw the gray line separating the roads
 		if (i != numRoads - 1) {
-			HPEN hPen = CreatePen(PS_SOLID, 4, RGB(192, 192, 192));
+			HPEN hPen = CreatePen(PS_SOLID, 4, GRAY);
 			HPEN hOldPen = (HPEN)SelectObject(hdc, hPen);
 			MoveToEx(hdc, startX, roadBottom, NULL);
 			LineTo(hdc, startX + mapWidth, roadBottom);
@@ -245,7 +245,7 @@ void DrawRoads(HDC hdc, int numRoads) {
 		}
 
 		/// Draw vertical lines within the road
-		HPEN hBrownPen = CreatePen(PS_SOLID, 1, RGB(139, 69, 19));
+		HPEN hBrownPen = CreatePen(PS_SOLID, 1, BROWN);
 		HPEN hOldPen = (HPEN)SelectObject(hdc, hBrownPen);
 
 		int numVerticalLines = 19;
@@ -404,7 +404,7 @@ void PaintScreenIndividualGame(HDC hdc, HWND hWnd, ClientData* cData) {
 	DrawFrog(hdc, hWnd, 0, 150, cData->currentBitmap, 0);
 	DrawString(hdc, hWnd, -100, 150, 20, cData->frog[0].username, RED, FONT_COMIC_SANS_MS);
 	DrawInt(hdc, hWnd, 100, 150, 20, cData->frog[0].score, RED, FONT_COMIC_SANS_MS);
-	//bitmapButton
+	DrawButton(hdc, hWnd, 175, 50, 50, 100, 10, TEXT("BITMAP"), IDC_BITMAP_BUTTON, FONT_ARIAL);
 	DrawString(hdc, hWnd, 0, 250, 20, TEXT("FROGGER"), RED, FONT_COMIC_SANS_MS);
 	//hoverfrog1
 
@@ -439,7 +439,7 @@ void PaintScreenCompetitiveGame(HDC hdc, HWND hWnd, ClientData* cData) {
 	DrawFrog(hdc, hWnd, 0, 200, cData->currentBitmap, 1);
 	DrawString(hdc, hWnd, -100, 200, 20, cData->frog[1].username, RED, FONT_COMIC_SANS_MS);
 	DrawInt(hdc, hWnd, 100, 200, 20, cData->frog[1].score, RED, FONT_COMIC_SANS_MS);
-	//bitmapButton
+	DrawButton(hdc, hWnd, 175, 50, 50, 100, 10, TEXT("BITMAP"), IDC_BITMAP_BUTTON, FONT_ARIAL);
 	DrawString(hdc, hWnd, 0, 250, 20, TEXT("FROGGER"), RED, FONT_COMIC_SANS_MS);
 	//hoverfrog1
 	//hoverfrog2
