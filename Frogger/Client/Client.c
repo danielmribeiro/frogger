@@ -138,6 +138,8 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nC
 // ============================================================================
 LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
 	GameInfo* g = NULL;
+	HWND hUsernameTextbox = NULL;
+	TCHAR username[10];
 
 	if (messg != WM_CREATE)
 		g = (GameInfo*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
@@ -149,7 +151,7 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 		g = (GameInfo*)cs->lpCreateParams;
 		SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)g);
 
-		cData.screen = COMPETITIVE_GAME;
+		cData.screen = MENU;
 		cData.nRoads = 10;
 		cData.level = 1;
 		cData.currentBitmap = 0;
@@ -214,6 +216,42 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 		}
 		break;
 	}
+	case WM_COMMAND:
+		switch (LOWORD(wParam)) {
+		case IDC_COMPETITIVE_BUTTON:
+		case IDC_INDIVIDUAL_BUTTON:
+			hUsernameTextbox = GetDlgItem(hWnd, IDC_USERNAME_TEXTBOX);
+			GetWindowText(hUsernameTextbox, username, sizeof(username) / sizeof(username[0]));
+
+			// Determine which button was clicked
+			if (LOWORD(wParam) == IDC_COMPETITIVE_BUTTON) {
+				// Competitive button was clicked
+				// Handle the logic accordingly
+				cData.screen = COMPETITIVE_WAIT;
+			}
+			else if (LOWORD(wParam) == IDC_INDIVIDUAL_BUTTON) {
+				// Individual button was clicked
+				// Handle the logic accordingly
+				cData.screen = INDIVIDUAL_WAIT;
+			}
+
+			// Retrieve the handles of the username textbox and buttons
+			HWND hUsernameTextbox = GetDlgItem(hWnd, IDC_USERNAME_TEXTBOX);
+			HWND hCompetitiveButton = GetDlgItem(hWnd, IDC_COMPETITIVE_BUTTON);
+			HWND hIndividualButton = GetDlgItem(hWnd, IDC_INDIVIDUAL_BUTTON);
+
+			// Destroy the username textbox and buttons
+			DestroyWindow(hUsernameTextbox);
+			DestroyWindow(hCompetitiveButton);
+			DestroyWindow(hIndividualButton);
+
+			// Now you have the entered username in the "username" variable
+			// and you know which button was clicked
+			InvalidateRect(hWnd, NULL, TRUE);
+			UpdateWindow(hWnd);
+			break;
+		}
+		break;
 	case WM_PAINT:
 	{
 		PAINTSTRUCT ps;

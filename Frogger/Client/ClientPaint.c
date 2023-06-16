@@ -59,6 +59,52 @@ void DrawInt(HDC hdc, HWND hWnd, int xStrPos, int yStrPos, int fontSize, int num
 	DrawString(hdc, hWnd, xStrPos, yStrPos, fontSize, text, textColor, font);
 }
 
+void DrawTextbox(HDC hdc, HWND hWnd, int xStrPos, int yStrPos, int height, int width, int fontSize, const TCHAR* text, const TCHAR* font) {
+	RECT rect;
+	GetClientRect(hWnd, &rect);
+	int screenWidth = rect.right - rect.left;
+	int screenWeight = rect.bottom - rect.top;
+	int centerX = screenWidth / 2;
+	int centerY = screenWeight / 2;
+
+	HFONT hFontUsername = CreateFont(-MulDiv(fontSize, GetDeviceCaps(hdc, LOGPIXELSY), 72), 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
+		DEFAULT_CHARSET, OUT_OUTLINE_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
+		VARIABLE_PITCH, font);
+	SelectObject(hdc, hFontUsername);
+
+	rect.top = centerY + yStrPos;
+	rect.bottom = rect.top + height;
+	rect.left = centerX + xStrPos;
+	rect.right = rect.left + width;
+	HWND hUsernameTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, TEXT("EDIT"), text,
+		WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top,
+		hWnd, (HMENU)IDC_USERNAME_TEXTBOX, GetModuleHandle(NULL), NULL);
+	SendMessage(hUsernameTextbox, WM_SETFONT, (WPARAM)hFontUsername, TRUE);
+}
+
+void DrawButton(HDC hdc, HWND hWnd, int xStrPos, int yStrPos, int height, int width, int fontSize, const TCHAR* text, int idc, const TCHAR* font) {
+	RECT rect;
+	GetClientRect(hWnd, &rect);
+	int screenWidth = rect.right - rect.left;
+	int screenWeight = rect.bottom - rect.top;
+	int centerX = screenWidth / 2;
+	int centerY = screenWeight / 2;
+
+	HFONT hFontButton = CreateFont(-MulDiv(fontSize, GetDeviceCaps(hdc, LOGPIXELSY), 72), 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
+		DEFAULT_CHARSET, OUT_OUTLINE_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
+		VARIABLE_PITCH, font);
+	SelectObject(hdc, hFontButton);
+
+	rect.top = centerY + yStrPos;
+	rect.bottom = rect.top + height;
+	rect.left = centerX + xStrPos;
+	rect.right = rect.left + width;
+	HWND hButton = CreateWindow(TEXT("BUTTON"), text,
+		WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top,
+		hWnd, (HMENU)idc, GetModuleHandle(NULL), NULL);
+	SendMessage(hButton, WM_SETFONT, (WPARAM)hFontButton, TRUE);
+}
+
 void DrawWinnerString(HDC hdc, HWND hWnd, int xStrPos, int yStrPos, int fontSize, ClientData* cData, int gamemode, COLORREF textColor, const TCHAR* font) {
 	TCHAR str1[256];
 	TCHAR str2[256];
@@ -337,8 +383,10 @@ void PaintScreenMenu(HDC hdc, HWND hWnd) {
 	DrawBackgroundColor(hdc, hWnd, DARK_GREEN);
 	DrawString(hdc, hWnd, 0, -250, 30, TEXT("FROGGER"), RED, FONT_COMIC_SANS_MS);
 	DrawString(hdc, hWnd, 0, -150, 20, TEXT("Username:"), WHITE, FONT_ARIAL);
-	//DrawTextboxUsername
-	DrawString(hdc, hWnd, 0, 100, 30, TEXT("Gamemode"), WHITE, FONT_ARIAL);
+	DrawTextbox(hdc, hWnd, -150, -100, 50,300,25, TEXT("Player"), FONT_ARIAL);
+	DrawString(hdc, hWnd, 0, 50, 20, TEXT("Gamemode:"), WHITE, FONT_ARIAL);
+	DrawButton(hdc, hWnd, -275, 100, 50, 250, 20, TEXT("INDIVIDUAL"), IDC_INDIVIDUAL_BUTTON, FONT_ARIAL);
+	DrawButton(hdc, hWnd, 25, 100, 50, 250, 20, TEXT("COMPETITIVE"), IDC_COMPETITIVE_BUTTON, FONT_ARIAL);
 	//DrawButtonCompetitive
 	//DrawButtonIndividual
 }

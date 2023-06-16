@@ -63,6 +63,8 @@ typedef struct {
 void DrawBackgroundColor(HDC hdc, HWND hWnd, COLORREF color);
 void DrawString(HDC hdc, HWND hWnd, int xStrPos, int yStrPos, int fontSize, const TCHAR* text, COLORREF textColor, const TCHAR* font);
 void DrawInt(HDC hdc, HWND hWnd, int xStrPos, int yStrPos, int fontSize, int number, COLORREF textColor, const TCHAR* font);
+void DrawTextbox(HDC hdc, HWND hWnd, int xStrPos, int yStrPos, int height, int width, int fontSize, const TCHAR* text, const TCHAR* font);
+void DrawButton(HDC hdc, HWND hWnd, int xStrPos, int yStrPos, int height, int width, int fontSize, const TCHAR* text, int idc, const TCHAR* font);
 void DrawWinnerString(HDC hdc, HWND hWnd, int xStrPos, int yStrPos, int fontSize, ClientData* cData, int gamemode, COLORREF textColor, const TCHAR* font);
 void DrawFrog(HDC hdc, HWND hWnd, int bitmapX, int bitmapY, int currentBitmap, int frogID);
 void DrawRoads(HDC hdc, int numRoads);
@@ -79,5 +81,10 @@ void PaintScreenIndividualGameover(HDC hdc, HWND hWnd, ClientData* cData);
 void PaintScreenCompetitiveWait(HDC hdc, HWND hWnd);
 void PaintScreenCompetitiveGame(HDC hdc, HWND hWnd, ClientData* cData);
 void PaintScreenCompetitiveGameover(HDC hdc, HWND hWnd, ClientData* cData);
+
+
+#define IDC_COMPETITIVE_BUTTON 1001
+#define IDC_INDIVIDUAL_BUTTON 1002
+#define IDC_USERNAME_TEXTBOX 1003
 
 #endif
