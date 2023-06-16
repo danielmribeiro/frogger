@@ -387,8 +387,6 @@ void PaintScreenMenu(HDC hdc, HWND hWnd) {
 	DrawString(hdc, hWnd, 0, 50, 20, TEXT("Gamemode:"), WHITE, FONT_ARIAL);
 	DrawButton(hdc, hWnd, -275, 100, 50, 250, 20, TEXT("INDIVIDUAL"), IDC_INDIVIDUAL_BUTTON, FONT_ARIAL);
 	DrawButton(hdc, hWnd, 25, 100, 50, 250, 20, TEXT("COMPETITIVE"), IDC_COMPETITIVE_BUTTON, FONT_ARIAL);
-	//DrawButtonCompetitive
-	//DrawButtonIndividual
 }
 
 void PaintScreenIndividualWait(HDC hdc, HWND hWnd) {
@@ -419,7 +417,7 @@ void PaintScreenIndividualGameover(HDC hdc, HWND hWnd, ClientData* cData) {
 	DrawFrog(hdc, hWnd, 0, 0, cData->currentBitmap,0);
 	DrawString(hdc, hWnd, -100, 0, 20, cData->frog[0].username, RED, FONT_COMIC_SANS_MS);
 	DrawInt(hdc, hWnd, 100, 0, 20, cData->frog[0].score, RED, FONT_COMIC_SANS_MS);
-	//GoToMenuButton
+	DrawButton(hdc, hWnd, -100, 100, 50, 200, 20, TEXT("MENU"), IDC_MENU_BUTTON, FONT_ARIAL);
 	DrawString(hdc, hWnd, 0, 250, 20, TEXT("FROGGER"), RED, FONT_COMIC_SANS_MS);
 }
 
@@ -457,6 +455,6 @@ void PaintScreenCompetitiveGameover(HDC hdc, HWND hWnd, ClientData* cData) {
 	DrawFrog(hdc, hWnd, 0, 50, cData->currentBitmap, 1);
 	DrawString(hdc, hWnd, -100, 50, 20, cData->frog[1].username, RED, FONT_COMIC_SANS_MS);
 	DrawInt(hdc, hWnd, 100, 50, 20, cData->frog[1].score, RED, FONT_COMIC_SANS_MS);
-	//GoToMenuButton
+	DrawButton(hdc, hWnd, -100, 100, 50, 200, 20, TEXT("MENU"), IDC_MENU_BUTTON, FONT_ARIAL);
 	DrawString(hdc, hWnd, 0, 250, 20, TEXT("FROGGER"), RED, FONT_COMIC_SANS_MS);
 }

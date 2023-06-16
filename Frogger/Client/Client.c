@@ -151,7 +151,7 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 		g = (GameInfo*)cs->lpCreateParams;
 		SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)g);
 
-		cData.screen = MENU;
+		cData.screen = COMPETITIVE_GAMEOVER;
 		cData.nRoads = 10;
 		cData.level = 1;
 		cData.currentBitmap = 0;
@@ -218,22 +218,21 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 	}
 	case WM_COMMAND:
 		switch (LOWORD(wParam)) {
+		case IDC_MENU_BUTTON:
+		{
+			cData.screen = MENU;
+			HWND hMenuButton = GetDlgItem(hWnd, IDC_MENU_BUTTON);
+			DestroyWindow(hMenuButton);
+
+			InvalidateRect(hWnd, NULL, TRUE);
+			UpdateWindow(hWnd);
+			break;
+		}
 		case IDC_COMPETITIVE_BUTTON:
-		case IDC_INDIVIDUAL_BUTTON:
+		{
 			hUsernameTextbox = GetDlgItem(hWnd, IDC_USERNAME_TEXTBOX);
 			GetWindowText(hUsernameTextbox, username, sizeof(username) / sizeof(username[0]));
-
-			// Determine which button was clicked
-			if (LOWORD(wParam) == IDC_COMPETITIVE_BUTTON) {
-				// Competitive button was clicked
-				// Handle the logic accordingly
-				cData.screen = COMPETITIVE_WAIT;
-			}
-			else if (LOWORD(wParam) == IDC_INDIVIDUAL_BUTTON) {
-				// Individual button was clicked
-				// Handle the logic accordingly
-				cData.screen = INDIVIDUAL_WAIT;
-			}
+			cData.screen = COMPETITIVE_WAIT;
 
 			// Retrieve the handles of the username textbox and buttons
 			HWND hUsernameTextbox = GetDlgItem(hWnd, IDC_USERNAME_TEXTBOX);
@@ -245,11 +244,30 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 			DestroyWindow(hCompetitiveButton);
 			DestroyWindow(hIndividualButton);
 
-			// Now you have the entered username in the "username" variable
-			// and you know which button was clicked
 			InvalidateRect(hWnd, NULL, TRUE);
 			UpdateWindow(hWnd);
 			break;
+		}
+		case IDC_INDIVIDUAL_BUTTON:
+		{
+			hUsernameTextbox = GetDlgItem(hWnd, IDC_USERNAME_TEXTBOX);
+			GetWindowText(hUsernameTextbox, username, sizeof(username) / sizeof(username[0]));
+			cData.screen = INDIVIDUAL_WAIT;
+
+			// Retrieve the handles of the username textbox and buttons
+			HWND hUsernameTextbox = GetDlgItem(hWnd, IDC_USERNAME_TEXTBOX);
+			HWND hCompetitiveButton = GetDlgItem(hWnd, IDC_COMPETITIVE_BUTTON);
+			HWND hIndividualButton = GetDlgItem(hWnd, IDC_INDIVIDUAL_BUTTON);
+
+			// Destroy the username textbox and buttons
+			DestroyWindow(hUsernameTextbox);
+			DestroyWindow(hCompetitiveButton);
+			DestroyWindow(hIndividualButton);
+
+			InvalidateRect(hWnd, NULL, TRUE);
+			UpdateWindow(hWnd);
+			break;
+		}
 		}
 		break;
 	case WM_PAINT:

@@ -86,5 +86,6 @@ void PaintScreenCompetitiveGameover(HDC hdc, HWND hWnd, ClientData* cData);
 #define IDC_COMPETITIVE_BUTTON 1001
 #define IDC_INDIVIDUAL_BUTTON 1002
 #define IDC_USERNAME_TEXTBOX 1003
+#define IDC_MENU_BUTTON 1004
 
 #endif
