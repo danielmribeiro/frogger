@@ -32,14 +32,16 @@ TCHAR szProgName[] = TEXT("Frogger");
 //   nCmdShow:  Par�metro que especifica o modo de exibi��o da janela (usado em ShowWindow()
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nCmdShow) {
 	HWND hWnd; // hWnd � o handler da janela, gerado mais abaixo por CreateWindow()
-	MSG lpMsg; // MSG � uma estrutura definida no Windows para as mensagens
+	MSG lpMsg = { 0 }; // MSG � uma estrutura definida no Windows para as mensagens
 	WNDCLASSEX wcApp; // WNDCLASSEX � uma estrutura cujos membros servem para definir as caracter�sticas da classe da janela
 	ClientCommsData communicationData;
 	GameInfo g;
 
 	// TODO Check if the server is running
-	if (!isServerRunning(&communicationData, &g))
+	if (!isServerRunning(&communicationData, &g)) {
 		return -1;
+	}
+		//return -1;
 
 	// TODO CreateThread for communication with server
 

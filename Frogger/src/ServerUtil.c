@@ -1,5 +1,7 @@
 #include "ServerUtil.h"
 
+HANDLE hEventOver;
+
 bool isProgramUnique(HANDLE* hMutex, LPCSTR filename) {
 	hMutex = CreateMutex(NULL, TRUE, filename);
 	if (GetLastError() == ERROR_ALREADY_EXISTS) {
@@ -306,62 +308,158 @@ DWORD WINAPI handleComms(LPVOID p) {
 	return 0;
 }
 
+ClientRequest getClientRequest(HANDLE hPipe) {
+	ClientRequest clientRequest;
+	DWORD dwBytesRead;
+	bool readSuccess = false;
+
+	clientRequest.type = CLIENT_SHUTDOWN;
+	readSuccess = ReadFile(hPipe, &clientRequest, sizeof(ClientRequest), &dwBytesRead, NULL);
+	if (readSuccess == false)
+		_tprintf(_T("Error reading client pipe\n"));
+
+	return clientRequest;
+}
+
+
+
+DWORD WINAPI pipeHandlerProc(LPVOID p) {
+	ClientRequest clientRequest = { 0 };
+	ClientPipe* c = (ClientPipe*)p;
+
+	while (c->s->status != SHUTDOWN) {
+		clientRequest = getClientRequest(c->hPipe, &clientRequest);
+		if (clientRequest.type == CLIENT_SHUTDOWN)
+			break;
+
+		// TODO Handle client request
+		_tprintf(_T("ClientRequest: Type %d"), clientRequest.type);
+	}
+
+	_tprintf(_T("Pipe handler is going down %d"), c->playerID);
+	c->isActive = FALSE;
+	DisconnectNamedPipe(c->hPipe);
+	return 0;
+}
+
+DWORD getFirstClientPipeAvailable(ClientPipe* c) {
+	for (DWORD i = 0; i < MAX_PLAYERS; i++)
+		if (c[i].isActive == FALSE)
+			return i;
+	return -1;
+}
+
 DWORD WINAPI handleClientsComms(LPVOID p) {
 	ServerData* s = (ServerData*)p;
-	HANDLE hServerPipe = NULL, hClientsPipe[2] = { { NULL }, {NULL} };
-	DWORD clientsPIDS[2] = { 0 ,0 };
-	TCHAR pipeName[50];
-	DWORD pid, bytesRead;
-	int clientsConnected = 0;
+	ClientPipe clientPipe[MAX_PLAYERS];
 
-	if ((hServerPipe = CreateNamedPipe(SERVER_PIPE,
-		PIPE_ACCESS_DUPLEX,
-		PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT,
-		PIPE_UNLIMITED_INSTANCES,
-		4096,
-		4096,
-		0,
-		NULL
-	)) == INVALID_HANDLE_VALUE) {
-		_tprintf(_T("Error creating server pipe\n"));
-		s->status = 1;
+	OVERLAPPED stOverlapped;
+	HANDLE pipeConnections[MAX_PLAYERS];
+	HANDLE clientConnectionThreads[MAX_PLAYERS];
+	DWORD clientConnectionThreadID[MAX_PLAYERS];
+	HANDLE hPipeTmp;
+
+	for (int i = 0; i < MAX_PLAYERS; i++) {
+		pipeConnections[i] = INVALID_HANDLE_VALUE;
+		clientConnectionThreads[i] = INVALID_HANDLE_VALUE;
+		clientPipe[i].hPipe = INVALID_HANDLE_VALUE;
+		clientPipe[i].s = s;
+		clientPipe[i].playerID = i + 1;
+		clientPipe[i].isActive = FALSE;
+	}
+
+	hEventOver = CreateEvent(NULL, FALSE, FALSE, NULL);
+	if (hEventOver == NULL) {
+		_tprintf(_T("Error creating event for pipes\n"));
+		s->status = SHUTDOWN;
 		return -1;
 	}
 
+	stOverlapped.hEvent = hEventOver;
+
 	while (s->status != SHUTDOWN) {
-		// Wait for message from a client
-		do
-			bytesRead = ReadFile(hServerPipe, &pid, sizeof(pid), NULL, NULL);
-		while (bytesRead == 0);
+		DWORD index = getFirstClientPipeAvailable(clientPipe);
+		if (index == -1) continue;
 
-		_tprintf(_T("Message: %lu\n"), pid);
-
-		// Create client pipe
-		/*switch (pid) {
-		case CLIENT_CONNECTION:
-			sprintf_s(pipeName, sizeof(pipeName), CLIENT_PIPE, pid);
-			clientsPIDS[clientsConnected] = pid;
-			hClientsPipe[clientsConnected] = CreateNamedPipe(pipeName,
-				PIPE_ACCESS_DUPLEX,
-				PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT,
-				PIPE_UNLIMITED_INSTANCES,
-				4096,
-				4096,
-				0,
-				NULL);
-			if (!hClientsPipe[clientsConnected]) {
-				_tprintf(_T("Erro a criar pipe para client"));
-				pid = 1;
-				WriteFile(hServerPipe, &pid, sizeof(pid), NULL, NULL);
-				continue;
-			}
-			clientsConnected++;
+		// TODO verify which clients has disconnected
+		hPipeTmp = CreateNamedPipe(SERVER_PIPE,
+			PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
+			PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT,
+			PIPE_UNLIMITED_INSTANCES,
+			4096,
+			4096,
+			0,
+			NULL);
+		if (hPipeTmp == INVALID_HANDLE_VALUE) {
+			_tprintf(_T("Error creating server pipe\n"));
 			break;
-		}*/
+		}
 
-		pid = 0;
-		WriteFile(hServerPipe, &pid, sizeof(pid), NULL, NULL);
+		ConnectNamedPipe(hPipeTmp, &stOverlapped);
+		WaitForSingleObject(hEventOver, INFINITE);
+
+		if (s->status == SHUTDOWN)
+			break;
+
+		clientPipe[index].hPipe = hPipeTmp;
+		clientPipe[index].isActive = TRUE;
+		clientConnectionThreads[index] = CreateThread(
+			NULL,
+			0,
+			pipeHandlerProc,
+			&clientPipe[index],
+			0,
+			&clientConnectionThreadID[index]
+		);
+
+		pipeConnections[index] = hPipeTmp;
 	}
+
+	/*for (int i = 0; i < MAX_PLAYERS; i++) {
+		hPipeTmp = CreateNamedPipe(SERVER_PIPE,
+			PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
+			PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT,
+			MAX_PLAYERS,
+			4096,
+			4096,
+			0,
+			NULL);
+		if (hPipeTmp == INVALID_HANDLE_VALUE) {
+			_tprintf(_T("Error creating server pipe\n"));
+			break;
+		}
+
+		ConnectNamedPipe(hPipeTmp, &stOverlapped);
+		WaitForSingleObject(hEventOver, INFINITE);
+
+		if (s->status == SHUTDOWN)
+			break;
+
+		clientPipe[i].hPipe = hPipeTmp;
+		clientConnectionThreads[i] = CreateThread(
+			NULL,
+			0,
+			pipeHandlerProc,
+			&clientPipe[i],
+			0,
+			&clientConnectionThreadID[i]
+		);
+
+		pipeConnections[i] = hPipeTmp;
+	}*/
+
+	WaitForMultipleObjects(MAX_PLAYERS, clientConnectionThreads, TRUE, INFINITE);
+
+	for (int i = 0; i < MAX_PLAYERS; i++) {
+		if (clientConnectionThreads[i] != INVALID_HANDLE_VALUE) {
+			DisconnectNamedPipe(pipeConnections[i]);
+			CloseHandle(pipeConnections[i]);
+		}
+	}
+
+	return 0;
+
+
 
 	return 0;
 }

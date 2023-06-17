@@ -3,6 +3,8 @@
 
 #include "Base.h"
 
+#define MAX_PLAYERS 2
+
 #define SERVER_MUTEX _T("SERVER_MUTEX")
 #define SERVER_MEMORY _T("SERVER_MEMORY")
 #define SERVER_GAME_MUTEX _T("SERVER_GAME_MUTEX")
@@ -19,10 +21,6 @@
 
 #define OPERATOR_COMMAND_MUTEX _T("OPERATOR_COMMAND_MUTEX")
 #define EVENT_COMMAND_UPDATED _T("EVENT_COMMAND_UPDATED_%lu")
-
-// Client communication
-#define CLIENT_CONNECTION 1
-#define CLIENT_SHUTDOWN 2
 
 typedef enum {
 	OFF,
@@ -83,9 +81,26 @@ typedef struct {
 } ServerData;
 
 typedef struct {
-	DWORD id;
+	DWORD playerID;
+	BOOL isActive;
+	ServerData* s;
 	HANDLE hPipe;
 } ClientPipe;
+
+enum ClientRequestType
+{
+	CLIENT_CONNECT,
+	PLAY,
+	GAME_UPDATE,
+	WIN,
+	LOSE,
+	CLIENT_SHUTDOWN
+};
+typedef enum ClientRequestType CRT;
+
+typedef struct {
+	DWORD type;
+} ClientRequest;
 
 // Operator Command Reader Structure
 typedef struct {
