@@ -1,32 +1,18 @@
 #include "Client.h"
 
 void DrawBackgroundColor(HDC hdc, HWND hWnd, COLORREF color) {
-	// Create a "color" brush
 	HBRUSH hBrush = CreateSolidBrush(color);
-
-	// Get the client area rectangle
 	RECT rect;
 	GetClientRect(hWnd, &rect);
-
-	// Fill the client area with the green brush
 	FillRect(hdc, &rect, hBrush);
-
 	DeleteObject(hBrush);
 }
 
 void DrawString(HDC hdc, HWND hWnd, int xStrPos, int yStrPos, int fontSize, const TCHAR* text, COLORREF textColor, const TCHAR* font) {
-	// Create a font with the specified size
-	HFONT hFont = CreateFont(
-		-MulDiv(fontSize, GetDeviceCaps(hdc, LOGPIXELSY), 72),
-		0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
-		DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
-		DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, font
-	);
-
-	// Select the font into the DC
+	HFONT hFont = CreateFont(-MulDiv(fontSize, GetDeviceCaps(hdc, LOGPIXELSY), 72),0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, font);
+	
 	HFONT hOldFont = (HFONT)SelectObject(hdc, hFont);
-
-	// Get the text dimensions
+	
 	RECT rect;
 	GetClientRect(hWnd, &rect);
 	int textWidth = rect.right - rect.left;
@@ -35,20 +21,15 @@ void DrawString(HDC hdc, HWND hWnd, int xStrPos, int yStrPos, int fontSize, cons
 	SIZE textSize;
 	GetTextExtentPoint32(hdc, text, lstrlen(text), &textSize);
 
-	// Calculate the position to align the text to the middle of the screen
 	int xPos = (textWidth - textSize.cx) / 2 + xStrPos;
 	int yPos = (textHeight - textSize.cy) / 2 + yStrPos;
 
-	// Set the text color
 	SetTextColor(hdc, textColor);
 
-	// Remove the white background of the text
 	SetBkMode(hdc, TRANSPARENT);
 
-	// Print the string
 	TextOut(hdc, xPos, yPos, text, lstrlen(text));
 
-	// Restore the original font and clean up
 	SelectObject(hdc, hOldFont);
 	DeleteObject(hFont);
 }
@@ -127,17 +108,13 @@ void DrawWinnerString(HDC hdc, HWND hWnd, int xStrPos, int yStrPos, int fontSize
 			_tcscpy_s(str2, 256, _T("It's a tie!"));
 		}
 	}
-	// Calculate the required size for the concatenation
 	int size = _tcslen(str1) + _tcslen(str2) + 1;
 
-	// Allocate memory for the concatenation
 	TCHAR* result = (TCHAR*)malloc(size * sizeof(TCHAR));
 
 	if (result != NULL) {
-		// Copy the first string to the result
 		_tcscpy_s(result, size, str1);
 
-		// Concatenate the second string with the result
 		_tcscat_s(result, size, str2);
 
 		DrawString(hdc, hWnd, xStrPos, yStrPos, fontSize, result, textColor, font);
@@ -176,17 +153,14 @@ void DrawFrog(HDC hdc, HWND hWnd, int bitmapX, int bitmapY, int currentBitmap, i
 		break;
 	}
 	
-	// Create a memory device context for the bitmap
 	HDC memDC = CreateCompatibleDC(hdc);
 	HBITMAP oldBitmap = (HBITMAP)SelectObject(memDC, hBitmap);
 
-	// Get the bitmap dimensions
 	BITMAP bitmapInfo;
 	GetObject(hBitmap, sizeof(BITMAP), &bitmapInfo);
 	int bitmapWidth = bitmapInfo.bmWidth;
 	int bitmapHeight = bitmapInfo.bmHeight;
 
-	// Calculate the position to align the bitmap to the middle of the screen
 	RECT clientRect;
 	GetClientRect(hWnd, &clientRect);
 	int centerX = (clientRect.right - clientRect.left) / 2;
@@ -194,47 +168,37 @@ void DrawFrog(HDC hdc, HWND hWnd, int bitmapX, int bitmapY, int currentBitmap, i
 	int bitmapLeft = centerX - bitmapWidth / 2 + bitmapX;
 	int bitmapTop = centerY - bitmapHeight / 2 + bitmapY;
 
-	// Draw the bitmap onto the screen
 	BitBlt(hdc, bitmapLeft, bitmapTop, bitmapWidth, bitmapHeight, memDC, 0, 0, SRCCOPY);
 
-	// Clean up resources
 	SelectObject(memDC, oldBitmap);
 	DeleteDC(memDC);
 }
 
 void DrawRoads(HDC hdc, int numRoads) {
-	// Calculate the height of each road
 	int startX = 10;
 	int startY = 10;
-	int mapHeight = 300;//altura
-	int mapWidth = 600; //largura
+	int mapHeight = 300;
+	int mapWidth = 600;
 	int roadSpacing = 30;
 	int totalRoads = 10;
 
-	// Draw the roads
 	for (int i = 0; i < totalRoads; i++) {
-		// Calculate the coordinates for each road
 		int roadTop = startY + i * roadSpacing;
 		int roadBottom = roadTop + roadSpacing - 1;
 
-		// Determine the road color
 		COLORREF roadColor;
 		if (i == 0 || i >= numRoads - 1) {
-			// First and last road color is green
 			roadColor = GREEN;
 		}
 		else {
-			// Other roads color is black
 			roadColor = DARK_BROWN;
 		}
 
-		// Draw the road
 		RECT roadRect = { startX, roadTop, startX + mapWidth, roadBottom };
 		HBRUSH hBrush = CreateSolidBrush(roadColor);
 		FillRect(hdc, &roadRect, hBrush);
 		DeleteObject(hBrush);
 
-		// Draw the gray line separating the roads
 		if (i != numRoads - 1) {
 			HPEN hPen = CreatePen(PS_SOLID, 4, GRAY);
 			HPEN hOldPen = (HPEN)SelectObject(hdc, hPen);
@@ -244,12 +208,11 @@ void DrawRoads(HDC hdc, int numRoads) {
 			DeleteObject(hPen);
 		}
 
-		/// Draw vertical lines within the road
 		HPEN hBrownPen = CreatePen(PS_SOLID, 1, BROWN);
 		HPEN hOldPen = (HPEN)SelectObject(hdc, hBrownPen);
 
 		int numVerticalLines = 19;
-		int lineSpacing = mapWidth / (numVerticalLines + 1);  // Add 1 for the last line
+		int lineSpacing = mapWidth / (numVerticalLines + 1);
 		int lineX = startX + lineSpacing;
 
 		for (int j = 0; j < numVerticalLines; j++) {
@@ -268,7 +231,6 @@ void DrawRoads(HDC hdc, int numRoads) {
 }
 
 void DrawMapElement(HDC hdc, HWND hWnd, int elementType, int posX, int posY, ClientData* cData) {
-	// Load the bitmap image
 	HBITMAP hBitmap=NULL;
 	switch (elementType) {
 	case 0: //Frog
@@ -328,25 +290,18 @@ void DrawMapElement(HDC hdc, HWND hWnd, int elementType, int posX, int posY, Cli
 	}
 
 	if (hBitmap != NULL) {
-		// Create a compatible device context
 		HDC hMemDC = CreateCompatibleDC(hdc);
 		if (hMemDC != NULL) {
-			// Select the bitmap into the device context
 			HBITMAP hOldBitmap = (HBITMAP)SelectObject(hMemDC, hBitmap);
 
+			int obstacleX = (posX * 30) + 10;
+			int obstacleY = (posY * 30) + 10;
 
-			// Define the coordinates for the obstacle image
-			int obstacleX = (posX * 30) + 10;  // Change the X-coordinate here
-			int obstacleY = (posY * 30) + 10;  // Change the Y-coordinate here
-
-			// Get the size of the bitmap
 			BITMAP bmp;
 			GetObject(hBitmap, sizeof(BITMAP), &bmp);
 
-			// Draw the bitmap onto the device context
 			BitBlt(hdc, obstacleX, obstacleY, bmp.bmWidth, bmp.bmHeight, hMemDC, 0, 0, SRCCOPY);
 
-			// Restore the old bitmap and clean up resources
 			SelectObject(hMemDC, hOldBitmap);
 			DeleteDC(hMemDC);
 		}
@@ -357,21 +312,19 @@ void DrawMap(HDC hdc, HWND hWnd, int gameMode, ClientData* cData) {
 	DrawRoads(hdc, cData->nRoads);
 
 	if (gameMode == 0) {
-		DrawMapElement(hdc, hWnd, 0, cData->frog[0].pos.x, cData->frog[0].pos.y, cData); //FROG1
+		DrawMapElement(hdc, hWnd, 0, cData->frog[0].pos.x, cData->frog[0].pos.y, cData);
 	}
 	else if (gameMode == 1) {
-		DrawMapElement(hdc, hWnd, 0, cData->frog[0].pos.x, cData->frog[0].pos.y, cData); //FROG1
-		DrawMapElement(hdc, hWnd, 1, cData->frog[1].pos.x, cData->frog[1].pos.y, cData); //OPPONENT1
+		DrawMapElement(hdc, hWnd, 0, cData->frog[0].pos.x, cData->frog[0].pos.y, cData);
+		DrawMapElement(hdc, hWnd, 1, cData->frog[1].pos.x, cData->frog[1].pos.y, cData);
 	}
 	//////////////////TODO/////////FAZER CICLO DOS CARROS
-	DrawMapElement(hdc, hWnd, 2, cData->car[0][0].pos.x, cData->car[0][0].pos.y, cData); //CAR1
+	DrawMapElement(hdc, hWnd, 2, cData->car[0][0].pos.x, cData->car[0][0].pos.y, cData);
 	////////////////TODO///////////FAZER CICLO DOS OBSTACULOS
-	DrawMapElement(hdc, hWnd, 3, cData->obstacle[0][0].pos.x, cData->obstacle[0][0].pos.y, cData); //CAR1
+	DrawMapElement(hdc, hWnd, 3, cData->obstacle[0][0].pos.x, cData->obstacle[0][0].pos.y, cData);
 	
 }
 
-
-//SCREEN
 void PaintScreenWelcome(HDC hdc, HWND hWnd) {
 	DrawBackgroundColor(hdc, hWnd, DARK_GREEN);
 	DrawString(hdc, hWnd, 0, -100, 80, TEXT("FROGGER"), RED, FONT_COMIC_SANS_MS);
