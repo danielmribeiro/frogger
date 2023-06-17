@@ -151,7 +151,7 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 		g = (GameInfo*)cs->lpCreateParams;
 		SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)g);
 
-		cData.screen = INDIVIDUAL_GAME;
+		cData.screen = COMPETITIVE_GAME;
 		cData.nRoads = 10;
 		cData.level = 1;
 		cData.currentBitmap = 0;
@@ -190,19 +190,27 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 			// Handle the key press here
 			switch (key) {
 			case VK_LEFT:
-				cData.frog[0].pos.x--;
+				if (cData.frog[0].pos.x > 0) {
+					cData.frog[0].pos.x--;
+				}
 				//TODO communicate
 				break;
 			case VK_RIGHT:
-				cData.frog[0].pos.x++;
+				if (cData.frog[0].pos.x < 20-1) {
+					cData.frog[0].pos.x++;
+				}
 				//TODO communicate
 				break;
 			case VK_UP:
-				cData.frog[0].pos.y--;
+				if (cData.frog[0].pos.y > 0) {
+					cData.frog[0].pos.y--;
+				}
 				//TODO communicate
 				break;
 			case VK_DOWN:
-				cData.frog[0].pos.y++;
+				if (cData.frog[0].pos.y < cData.nRoads-1) {
+					cData.frog[0].pos.y++;
+				}
 				//TODO communicate
 				break;
 				// Add cases for other keys you want to handle
@@ -217,8 +225,8 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 		break;
 	}
 	case WM_COMMAND:
+	{
 		switch (LOWORD(wParam)) {
-		
 		case IDC_COMPETITIVE_BUTTON:
 		{
 			hUsernameTextbox = GetDlgItem(hWnd, IDC_USERNAME_TEXTBOX);
@@ -278,12 +286,16 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 				cData.currentBitmap = 0;
 			}
 
+			HWND hBitmapButton = GetDlgItem(hWnd, IDC_BITMAP_BUTTON);
+			DestroyWindow(hBitmapButton);
+
 			InvalidateRect(hWnd, NULL, TRUE);
 			UpdateWindow(hWnd);
 			break;
 		}
 		}
 		break;
+	}
 	case WM_PAINT:
 	{
 		PAINTSTRUCT ps;
