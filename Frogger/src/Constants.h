@@ -71,26 +71,30 @@ typedef struct {
 	Car cars[MAX_LANES][MAX_CARS];
 } GameInfo;
 
+typedef struct ClientPipe ClientPipe;
+
 typedef struct {
 	HANDLE hGameThread, hCommsThread, hMemory, hMutex, hCircBuf;
 	HANDLE hClientsComms;
 	HANDLE hEventGameIsUpdated, hEventServerShutdown;
+	ClientPipe* clientPipes;
 	GameInfo g;
 	int clients, speed, lanes, status, gamemode;
 	// STATUS: WAITING = 0, GAME_IS_RUNNING = 1, EXIT = 2
 } ServerData;
 
-typedef struct {
+struct ClientPipe{
 	DWORD playerID;
 	BOOL isActive;
 	ServerData* s;
 	HANDLE hPipe;
-} ClientPipe;
+} ;
 
 enum ClientRequestType
 {
 	CLIENT_CONNECT,
-	PLAY,
+	PLAY_INDIVIDUAL,
+	PLAY_COMPETITIVE,
 	GAME_UPDATE,
 	WIN,
 	LOSE,
@@ -100,6 +104,7 @@ typedef enum ClientRequestType CRT;
 
 typedef struct {
 	DWORD type;
+	// TODO add gameInfo
 } ClientRequest;
 
 // Operator Command Reader Structure

@@ -34,14 +34,13 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nC
 	HWND hWnd; // hWnd � o handler da janela, gerado mais abaixo por CreateWindow()
 	MSG lpMsg = { 0 }; // MSG � uma estrutura definida no Windows para as mensagens
 	WNDCLASSEX wcApp; // WNDCLASSEX � uma estrutura cujos membros servem para definir as caracter�sticas da classe da janela
-	ClientCommsData communicationData;
+	ClientCommsData communicationData = { 0 };
 	GameInfo g;
 
 	// TODO Check if the server is running
 	if (!isServerRunning(&communicationData, &g)) {
 		return -1;
 	}
-		//return -1;
 
 	// TODO CreateThread for communication with server
 
@@ -153,29 +152,8 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 		g = (GameInfo*)cs->lpCreateParams;
 		SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)g);
 
-		cData.screen = COMPETITIVE_GAME;
-		cData.nRoads = 10;
-		cData.level = 1;
-		cData.currentBitmap = 0;
-		cData.frog[0].pos.x = 1;
-		cData.frog[0].pos.y = 1;
-		cData.frog[0].score = 50;
-		cData.frog[0].username = TEXT("Player 1");
-		cData.frog[1].pos.x = 2;
-		cData.frog[1].pos.y = 2;
-		cData.frog[1].score = 60;
-		cData.frog[1].username = TEXT("Player 2");
-		cData.car[0][0].dir = LEFT;
-		cData.car[0][0].pos.x = 3;
-		cData.car[0][0].pos.y = 3;
-		cData.car[0][1].dir = LEFT;
-		cData.car[0][1].pos.x = 4;
-		cData.car[0][1].pos.y = 4;
-		cData.obstacle[0][0].pos.x = 5;
-		cData.obstacle[0][0].pos.y = 5;
-		cData.obstacle[0][1].pos.x = 6;
-		cData.obstacle[0][1].pos.y = 6;
-		cData.time = 30;
+		// Start with menu
+		cData.screen = MENU;
 		break;
 	}
 	case WM_CLOSE: //Clicar para fechar a janela na cri

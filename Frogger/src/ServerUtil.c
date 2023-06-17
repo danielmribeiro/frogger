@@ -68,17 +68,7 @@ void handleCommands(ServerData* data) {
 	while (data->status != SHUTDOWN) {
 		_fgetts(cmd, 128, stdin);
 
-		if (_tcsicmp(COMMAND_START, cmd) == 0) {
-			if (data->status != GAME_RUNNING) {
-				data->status = GAME_RUNNING;
-				_tprintf(_T("Data->Status: %d"), data->status);
-				if (!createThread(&(data->hGameThread), handleGame, data))
-					_tprintf(_T("Error creating game handler thread"));
-			}
-			else
-				_tprintf(_T("Game is already running"));
-		}
-		else if (_tcsicmp(COMMAND_SUSPEND, cmd) == 0) {
+		if (_tcsicmp(COMMAND_SUSPEND, cmd) == 0) {
 			//TO DO SUSPEND GAME
 		}
 		else if (_tcsicmp(COMMAND_RESUME, cmd) == 0) {
@@ -184,6 +174,11 @@ DWORD WINAPI handleGame(LPVOID p) {
 			tries++;
 			res = writeSharedMemory(s->hMemory, &(s->g), sizeof(GameInfo));
 		} while (!res && tries <= 3);
+		
+		// TODO 
+		for (DWORD i = 0; i < 1; i++) {
+			WriteFile(s->clientPipes[i].hPipe, &(s->g), sizeof(GameInfo), NULL, NULL);
+		}
 
 		// Shutdown server. Something went wrong with communication
 		// TODO create event to abrundtly shutdown clients and operator
@@ -321,7 +316,21 @@ ClientRequest getClientRequest(HANDLE hPipe) {
 	return clientRequest;
 }
 
-
+void handleClientRequest(ClientRequest c, ServerData* s) {
+	switch (c.type) {
+	case CLIENT_CONNECT:
+		break;
+	case PLAY_INDIVIDUAL:
+		if (s->status != GAME_RUNNING) {
+			s->status = GAME_RUNNING;
+			if (!createThread(&(s->hGameThread), handleGame, s))
+				_tprintf(_T("Error creating game handler thread"));
+		}
+		break;
+	case PLAY_COMPETITIVE:
+		break;
+	}
+}
 
 DWORD WINAPI pipeHandlerProc(LPVOID p) {
 	ClientRequest clientRequest = { 0 };
@@ -334,6 +343,7 @@ DWORD WINAPI pipeHandlerProc(LPVOID p) {
 
 		// TODO Handle client request
 		_tprintf(_T("ClientRequest: Type %d"), clientRequest.type);
+		handleClientRequest(clientRequest, c->s);
 	}
 
 	_tprintf(_T("Pipe handler is going down %d"), c->playerID);
@@ -352,6 +362,7 @@ DWORD getFirstClientPipeAvailable(ClientPipe* c) {
 DWORD WINAPI handleClientsComms(LPVOID p) {
 	ServerData* s = (ServerData*)p;
 	ClientPipe clientPipe[MAX_PLAYERS];
+	s->clientPipes = &clientPipe;
 
 	OVERLAPPED stOverlapped;
 	HANDLE pipeConnections[MAX_PLAYERS];
