@@ -133,6 +133,9 @@ void setGameData(ServerData* s, int level, int speed, int lanes) {
 			g->cars[i][j].dir = dir;
 		}
 	}
+
+	// TODO init obstacles
+
 }
 
 void move(GameInfo* g) {
@@ -175,10 +178,12 @@ DWORD WINAPI handleGame(LPVOID p) {
 			res = writeSharedMemory(s->hMemory, &(s->g), sizeof(GameInfo));
 		} while (!res && tries <= 3);
 		
-		// TODO 
-		for (DWORD i = 0; i < 1; i++) {
+		// TODO add write to all clients or just one 
+		// if it's individual game
+		/*for (DWORD i = 0; i < 1; i++) {
 			WriteFile(s->clientPipes[i].hPipe, &(s->g), sizeof(GameInfo), NULL, NULL);
-		}
+		}*/
+		WriteFile(s->clientPipes[0].hPipe, &(s->g), sizeof(GameInfo), NULL, NULL);
 
 		// Shutdown server. Something went wrong with communication
 		// TODO create event to abrundtly shutdown clients and operator
@@ -308,7 +313,7 @@ ClientRequest getClientRequest(HANDLE hPipe) {
 	DWORD dwBytesRead;
 	bool readSuccess = false;
 
-	clientRequest.type = CLIENT_SHUTDOWN;
+	clientRequest.type = -1;
 	readSuccess = ReadFile(hPipe, &clientRequest, sizeof(ClientRequest), &dwBytesRead, NULL);
 	if (readSuccess == false)
 		_tprintf(_T("Error reading client pipe\n"));
@@ -316,15 +321,25 @@ ClientRequest getClientRequest(HANDLE hPipe) {
 	return clientRequest;
 }
 
-void handleClientRequest(ClientRequest c, ServerData* s) {
+void handleClientRequest(HANDLE hPipe, ClientRequest c, ServerData* s) {
+	DWORD res = 1;
+
 	switch (c.type) {
 	case CLIENT_CONNECT:
+		_tprintf(_T("Client has connected!\n"));
 		break;
 	case PLAY_INDIVIDUAL:
 		if (s->status != GAME_RUNNING) {
 			s->status = GAME_RUNNING;
-			if (!createThread(&(s->hGameThread), handleGame, s))
-				_tprintf(_T("Error creating game handler thread"));
+			_tprintf(_T("res = %d\n"), res);
+			WriteFile(hPipe, &res, sizeof(res), NULL, NULL);
+
+			if (!createThread(&(s->hGameThread), handleGame, s)) {
+				_tprintf(_T("Error creating game handler thread\n"));
+				res = 0;
+			}
+				
+			// Confirm that client can start
 		}
 		break;
 	case PLAY_COMPETITIVE:
@@ -341,12 +356,11 @@ DWORD WINAPI pipeHandlerProc(LPVOID p) {
 		if (clientRequest.type == CLIENT_SHUTDOWN)
 			break;
 
-		// TODO Handle client request
-		_tprintf(_T("ClientRequest: Type %d"), clientRequest.type);
-		handleClientRequest(clientRequest, c->s);
+		_tprintf(_T("ClientRequest: Type %d\n"), clientRequest.type);
+		handleClientRequest(c->hPipe, clientRequest, c->s);
 	}
 
-	_tprintf(_T("Pipe handler is going down %d"), c->playerID);
+	_tprintf(_T("Client %d has disconnected\n"), c->playerID);
 	c->isActive = FALSE;
 	DisconnectNamedPipe(c->hPipe);
 	return 0;
@@ -425,39 +439,6 @@ DWORD WINAPI handleClientsComms(LPVOID p) {
 
 		pipeConnections[index] = hPipeTmp;
 	}
-
-	/*for (int i = 0; i < MAX_PLAYERS; i++) {
-		hPipeTmp = CreateNamedPipe(SERVER_PIPE,
-			PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
-			PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT,
-			MAX_PLAYERS,
-			4096,
-			4096,
-			0,
-			NULL);
-		if (hPipeTmp == INVALID_HANDLE_VALUE) {
-			_tprintf(_T("Error creating server pipe\n"));
-			break;
-		}
-
-		ConnectNamedPipe(hPipeTmp, &stOverlapped);
-		WaitForSingleObject(hEventOver, INFINITE);
-
-		if (s->status == SHUTDOWN)
-			break;
-
-		clientPipe[i].hPipe = hPipeTmp;
-		clientConnectionThreads[i] = CreateThread(
-			NULL,
-			0,
-			pipeHandlerProc,
-			&clientPipe[i],
-			0,
-			&clientConnectionThreadID[i]
-		);
-
-		pipeConnections[i] = hPipeTmp;
-	}*/
 
 	WaitForMultipleObjects(MAX_PLAYERS, clientConnectionThreads, TRUE, INFINITE);
 

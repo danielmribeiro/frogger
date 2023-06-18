@@ -5,18 +5,17 @@ DWORD WINAPI communicationHandlerProc(LPVOID* p) {
 }
 
 bool isServerRunning(ClientCommsData* c, GameInfo* g) {
-	DWORD pid = 15;
+	DWORD pid = CLIENT_CONNECT;
 
 	// TODO fix wait named pipe connection forever!!! Can't be like this
-	if (!WaitNamedPipe(SERVER_PIPE, NMPWAIT_WAIT_FOREVER)) {
+	if (!WaitNamedPipe(SERVER_PIPE, 5000)) {
 		_tprintf(_T("Error waiting to connect to %s pipe\n"), SERVER_PIPE);
 		return false;
 	}
 
-	// TODO open server pipe
 	if ((c->hServerPipe = CreateFile(
 		SERVER_PIPE,
-		GENERIC_WRITE,
+		GENERIC_WRITE | GENERIC_READ,
 		0,
 		NULL,
 		OPEN_EXISTING,
@@ -25,13 +24,6 @@ bool isServerRunning(ClientCommsData* c, GameInfo* g) {
 		) == INVALID_HANDLE_VALUE)
 		return false;
 
-	// TODO remove this. Debug only to check if pipe's working
-	WriteFile(c->hServerPipe,
-		&pid,
-		sizeof(pid),
-		NULL,
-		NULL);
-	pid = 10;
 	WriteFile(c->hServerPipe,
 		&pid,
 		sizeof(pid),

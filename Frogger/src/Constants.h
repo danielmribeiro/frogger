@@ -22,13 +22,6 @@
 #define OPERATOR_COMMAND_MUTEX _T("OPERATOR_COMMAND_MUTEX")
 #define EVENT_COMMAND_UPDATED _T("EVENT_COMMAND_UPDATED_%lu")
 
-typedef enum {
-	OFF,
-	DEMO,
-	INDIVIDUAL,
-	COMPETITIVE
-} GameState;
-
 typedef struct {
 	int x, y;
 } Position;
@@ -65,7 +58,7 @@ typedef struct {
 	CircularBuffer circBuf[BUF_SIZE];
 } CircularBufferMemory;
 
-typedef struct { 
+typedef struct {
 	bool exit, serverShutdown, isCarsRunning;
 	int level, lanes, speed, numCars[MAX_LANES];
 	Car cars[MAX_LANES][MAX_CARS];
@@ -83,24 +76,22 @@ typedef struct {
 	// STATUS: WAITING = 0, GAME_IS_RUNNING = 1, EXIT = 2
 } ServerData;
 
-struct ClientPipe{
+struct ClientPipe {
 	DWORD playerID;
 	BOOL isActive;
 	ServerData* s;
 	HANDLE hPipe;
-} ;
+};
 
-enum ClientRequestType
-{
+enum ClientRequestType {
+	CLIENT_SHUTDOWN,
 	CLIENT_CONNECT,
 	PLAY_INDIVIDUAL,
 	PLAY_COMPETITIVE,
 	GAME_UPDATE,
-	WIN,
-	LOSE,
-	CLIENT_SHUTDOWN
+	GAME_WIN,
+	GAME_LOSE
 };
-typedef enum ClientRequestType CRT;
 
 typedef struct {
 	DWORD type;
