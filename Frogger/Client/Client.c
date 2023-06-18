@@ -81,6 +81,29 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 
 		
 		cData.screen = MENU;
+		/*
+		cData.nRoads = 10;
+		cData.level = 1;
+		cData.currentBitmap = 1;
+		cData.currentBitmap = 0;
+		cData.frog[0].pos.x = 1;
+		cData.frog[0].pos.y = 1;
+		cData.frog[0].score = 50;
+		cData.frog[0].username = TEXT("Player 1");
+		cData.frog[1].pos.x = 2;
+		cData.frog[1].pos.y = 2;
+		cData.frog[1].score = 60;
+		cData.frog[1].username = TEXT("Player 2");
+		cData.car[0][0].dir = LEFT;
+		cData.car[0][0].pos.x = 3;
+		cData.car[0][0].pos.y = 3;
+		cData.car[0][1].dir = LEFT;
+		cData.car[0][1].pos.x = 4;
+		cData.car[0][1].pos.y = 4;
+		cData.obstacle[0][0].pos.x = 5;
+		cData.obstacle[0][0].pos.y = 5;
+		cData.obstacle[0][1].pos.x = 6;
+		*/
 		break;
 	}
 	case WM_CLOSE:
