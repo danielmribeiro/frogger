@@ -15,7 +15,7 @@ bool initServerData(ServerData* s, bool isServer) {
 	}
 
 	if (isServer) {
-		if (!(s->hEventGameIsUpdated = CreateEvent(NULL, TRUE, FALSE, EVENT_GAME_IS_UPDATED))) {
+		if (!(s->hEventGameIsUpdated = CreateEvent(NULL, FALSE, FALSE, EVENT_GAME_IS_UPDATED))) {
 			_tprintf(_T("Error creating game update event. Shutting down"));
 			return false;
 		}

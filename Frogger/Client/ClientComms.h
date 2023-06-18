@@ -5,9 +5,9 @@
 #include "../src/Constants.h"
 
 typedef struct {
-	HANDLE hServerPipe, hClientPipe, hCommunicationThread;
+	HANDLE hServerPipe, hCommunicationThread;
 } ClientCommsData;
 
-bool isServerRunning(ClientCommsData* c, GameInfo * g);
+bool isServerRunning(ClientCommsData* c);
 
 #endif

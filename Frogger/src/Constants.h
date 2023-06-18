@@ -40,6 +40,7 @@ typedef struct {
 
 #define MAX_LANES 10
 #define MAX_CARS 8
+#define MAX_OBSTACLES 20
 #define BUF_SIZE 10
 
 typedef enum {
@@ -59,13 +60,24 @@ typedef struct {
 } CircularBufferMemory;
 
 typedef struct {
-	bool exit, serverShutdown, isCarsRunning;
-	int level, lanes, speed, numCars[MAX_LANES];
+	Position pos;
+} Obstacle;
+
+typedef struct {
+	Position pos;
+	TCHAR username[50];
+	int score;
+} Frog;
+
+typedef struct {
+	bool exit, isCarsRunning;
+	int time, level, lanes, speed, numObs[MAX_LANES], numCars[MAX_LANES];
 	Car cars[MAX_LANES][MAX_CARS];
+	Frog frogs[MAX_PLAYERS];
+	Obstacle obstacles[MAX_LANES][MAX_OBSTACLES];
 } GameInfo;
 
 typedef struct ClientPipe ClientPipe;
-
 typedef struct {
 	HANDLE hGameThread, hCommsThread, hMemory, hMutex, hCircBuf;
 	HANDLE hClientsComms;

@@ -71,7 +71,7 @@ DWORD WINAPI readGameProc(LPVOID p) {
 		WaitForSingleObject(s->hMutex, INFINITE);
 		memcpy(&localGameInfo, pGameInfo, sizeof(GameInfo));
 		ReleaseMutex(s->hMutex);
-		ResetEvent(s->hEventGameIsUpdated);
+		// ResetEvent(s->hEventGameIsUpdated);
 
 		// print game map
 		clearConsole();

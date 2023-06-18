@@ -9,10 +9,10 @@ void DrawBackgroundColor(HDC hdc, HWND hWnd, COLORREF color) {
 }
 
 void DrawString(HDC hdc, HWND hWnd, int xStrPos, int yStrPos, int fontSize, const TCHAR* text, COLORREF textColor, const TCHAR* font) {
-	HFONT hFont = CreateFont(-MulDiv(fontSize, GetDeviceCaps(hdc, LOGPIXELSY), 72),0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, font);
-	
+	HFONT hFont = CreateFont(-MulDiv(fontSize, GetDeviceCaps(hdc, LOGPIXELSY), 72), 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, font);
+
 	HFONT hOldFont = (HFONT)SelectObject(hdc, hFont);
-	
+
 	RECT rect;
 	GetClientRect(hWnd, &rect);
 	int textWidth = rect.right - rect.left;
@@ -92,15 +92,15 @@ void DrawWinnerString(HDC hdc, HWND hWnd, int xStrPos, int yStrPos, int fontSize
 
 	if (gamemode == 0) {
 		_tcscpy_s(str1, 256, _T("Well Done "));
-		_tcscpy_s(str2, 256, cData->frog[0].username);
+		_tcscpy_s(str2, 256, cData->g.frogs[0].username);
 	}
 	else if (gamemode == 1) {
-		if (cData->frog[0].score > cData->frog[1].score) {
-			_tcscpy_s(str1, 256, cData->frog[0].username);
+		if (cData->g.frogs[0].score > cData->g.frogs[1].score) {
+			_tcscpy_s(str1, 256, cData->g.frogs[0].username);
 			_tcscpy_s(str2, 256, _T(" Wins!"));
 		}
-		else if(cData->frog[0].score < cData->frog[1].score) {
-			_tcscpy_s(str1, 256, cData->frog[1].username);
+		else if (cData->g.frogs[0].score < cData->g.frogs[1].score) {
+			_tcscpy_s(str1, 256, cData->g.frogs[1].username);
 			_tcscpy_s(str2, 256, _T(" Wins!"));
 		}
 		else {
@@ -152,7 +152,7 @@ void DrawFrog(HDC hdc, HWND hWnd, int bitmapX, int bitmapY, int currentBitmap, i
 		}
 		break;
 	}
-	
+
 	HDC memDC = CreateCompatibleDC(hdc);
 	HBITMAP oldBitmap = (HBITMAP)SelectObject(memDC, hBitmap);
 
@@ -231,7 +231,7 @@ void DrawRoads(HDC hdc, int numRoads) {
 }
 
 void DrawMapElement(HDC hdc, HWND hWnd, int elementType, int posX, int posY, ClientData* cData) {
-	HBITMAP hBitmap=NULL;
+	HBITMAP hBitmap = NULL;
 	switch (elementType) {
 	case 0: //Frog
 		switch (cData->currentBitmap) {
@@ -309,20 +309,25 @@ void DrawMapElement(HDC hdc, HWND hWnd, int elementType, int posX, int posY, Cli
 }
 
 void DrawMap(HDC hdc, HWND hWnd, int gameMode, ClientData* cData) {
-	DrawRoads(hdc, cData->nRoads);
+	DrawRoads(hdc, cData->g.lanes);
 
 	if (gameMode == 0) {
-		DrawMapElement(hdc, hWnd, 0, cData->frog[0].pos.x, cData->frog[0].pos.y, cData);
+		DrawMapElement(hdc, hWnd, 0, cData->g.frogs[0].pos.x, cData->g.frogs[0].pos.y, cData);
 	}
 	else if (gameMode == 1) {
-		DrawMapElement(hdc, hWnd, 0, cData->frog[0].pos.x, cData->frog[0].pos.y, cData);
-		DrawMapElement(hdc, hWnd, 1, cData->frog[1].pos.x, cData->frog[1].pos.y, cData);
+		DrawMapElement(hdc, hWnd, 0, cData->g.frogs[0].pos.x, cData->g.frogs[0].pos.y, cData);
+		DrawMapElement(hdc, hWnd, 1, cData->g.frogs[1].pos.x, cData->g.frogs[1].pos.y, cData);
 	}
 	//////////////////TODO/////////FAZER CICLO DOS CARROS
-	DrawMapElement(hdc, hWnd, 2, cData->car[0][0].pos.x, cData->car[0][0].pos.y, cData);
-	////////////////TODO///////////FAZER CICLO DOS OBSTACULOS
-	DrawMapElement(hdc, hWnd, 3, cData->obstacle[0][0].pos.x, cData->obstacle[0][0].pos.y, cData);
-	
+	for (int i = 0; i < cData->g.lanes; i++) {
+		for (int j = 0; j < cData->g.numCars[i]; j++)
+			DrawMapElement(hdc, hWnd, 2, cData->g.cars[i][j].pos.x, cData->g.cars[i][j].pos.y, cData);
+
+		for (int j = 0; j < cData->g.numObs[i]; j++)
+			DrawMapElement(hdc, hWnd, 3, cData->g.obstacles[i][j].pos.x, cData->g.obstacles[i][j].pos.y, cData);
+
+	}
+
 }
 
 void PaintScreenWelcome(HDC hdc, HWND hWnd) {
@@ -336,7 +341,7 @@ void PaintScreenMenu(HDC hdc, HWND hWnd) {
 	DrawBackgroundColor(hdc, hWnd, DARK_GREEN);
 	DrawString(hdc, hWnd, 0, -250, 30, TEXT("FROGGER"), RED, FONT_COMIC_SANS_MS);
 	DrawString(hdc, hWnd, 0, -150, 20, TEXT("Username:"), WHITE, FONT_ARIAL);
-	DrawTextbox(hdc, hWnd, -150, -100, 50,300,25, TEXT("Player"), FONT_ARIAL);
+	DrawTextbox(hdc, hWnd, -150, -100, 50, 300, 25, TEXT("Player"), FONT_ARIAL);
 	DrawString(hdc, hWnd, 0, 50, 20, TEXT("Gamemode:"), WHITE, FONT_ARIAL);
 	DrawButton(hdc, hWnd, -275, 100, 50, 250, 20, TEXT("INDIVIDUAL"), IDC_INDIVIDUAL_BUTTON, FONT_ARIAL);
 	DrawButton(hdc, hWnd, 25, 100, 50, 250, 20, TEXT("COMPETITIVE"), IDC_COMPETITIVE_BUTTON, FONT_ARIAL);
@@ -352,11 +357,11 @@ void PaintScreenIndividualWait(HDC hdc, HWND hWnd) {
 void PaintScreenIndividualGame(HDC hdc, HWND hWnd, ClientData* cData) {
 	DrawBackgroundColor(hdc, hWnd, BLACK);
 	DrawMap(hdc, hWnd, 0, cData);
-	DrawInt(hdc, hWnd, 0, 100, 20, cData->level, RED, FONT_COMIC_SANS_MS);
-	DrawInt(hdc, hWnd, 50, 100, 20, cData->time, RED, FONT_COMIC_SANS_MS);
+	DrawInt(hdc, hWnd, 0, 100, 20, cData->g.level, RED, FONT_COMIC_SANS_MS);
+	DrawInt(hdc, hWnd, 50, 100, 20, cData->g.time, RED, FONT_COMIC_SANS_MS);
 	DrawFrog(hdc, hWnd, 0, 150, cData->currentBitmap, 0);
-	DrawString(hdc, hWnd, -100, 150, 20, cData->frog[0].username, RED, FONT_COMIC_SANS_MS);
-	DrawInt(hdc, hWnd, 100, 150, 20, cData->frog[0].score, RED, FONT_COMIC_SANS_MS);
+	DrawString(hdc, hWnd, -100, 150, 20, cData->g.frogs[0].username, RED, FONT_COMIC_SANS_MS);
+	DrawInt(hdc, hWnd, 100, 150, 20, cData->g.frogs[0].score, RED, FONT_COMIC_SANS_MS);
 	DrawButton(hdc, hWnd, 175, 50, 50, 100, 10, TEXT("BITMAP"), IDC_BITMAP_BUTTON, FONT_ARIAL);
 	DrawString(hdc, hWnd, 0, 250, 20, TEXT("FROGGER"), RED, FONT_COMIC_SANS_MS);
 	//hoverfrog1
@@ -367,9 +372,9 @@ void PaintScreenIndividualGameover(HDC hdc, HWND hWnd, ClientData* cData) {
 	DrawBackgroundColor(hdc, hWnd, DARK_GREEN);
 	DrawString(hdc, hWnd, 0, -200, 50, TEXT("GAMEOVER"), RED, FONT_ARIAL);
 	DrawWinnerString(hdc, hWnd, 0, -100, 20, cData, 0, GOLD, FONT_COMIC_SANS_MS);
-	DrawFrog(hdc, hWnd, 0, 0, cData->currentBitmap,0);
-	DrawString(hdc, hWnd, -100, 0, 20, cData->frog[0].username, RED, FONT_COMIC_SANS_MS);
-	DrawInt(hdc, hWnd, 100, 0, 20, cData->frog[0].score, RED, FONT_COMIC_SANS_MS);
+	DrawFrog(hdc, hWnd, 0, 0, cData->currentBitmap, 0);
+	DrawString(hdc, hWnd, -100, 0, 20, cData->g.frogs[0].username, RED, FONT_COMIC_SANS_MS);
+	DrawInt(hdc, hWnd, 100, 0, 20, cData->g.frogs[0].score, RED, FONT_COMIC_SANS_MS);
 	DrawButton(hdc, hWnd, -100, 100, 50, 200, 20, TEXT("MENU"), IDC_MENU_BUTTON, FONT_ARIAL);
 	DrawString(hdc, hWnd, 0, 250, 20, TEXT("FROGGER"), RED, FONT_COMIC_SANS_MS);
 }
@@ -384,14 +389,14 @@ void PaintScreenCompetitiveWait(HDC hdc, HWND hWnd) {
 void PaintScreenCompetitiveGame(HDC hdc, HWND hWnd, ClientData* cData) {
 	DrawBackgroundColor(hdc, hWnd, BLACK);
 	DrawMap(hdc, hWnd, 1, cData);
-	DrawInt(hdc, hWnd, 0, 100, 20, cData->level, RED, FONT_COMIC_SANS_MS);
-	DrawInt(hdc, hWnd, 50, 100, 20, cData->time, RED, FONT_COMIC_SANS_MS);
+	DrawInt(hdc, hWnd, 0, 100, 20, cData->g.level, RED, FONT_COMIC_SANS_MS);
+	DrawInt(hdc, hWnd, 50, 100, 20, cData->g.time, RED, FONT_COMIC_SANS_MS);
 	DrawFrog(hdc, hWnd, 0, 150, cData->currentBitmap, 0);
-	DrawString(hdc, hWnd, -100, 150, 20, cData->frog[0].username, RED, FONT_COMIC_SANS_MS);
-	DrawInt(hdc, hWnd, 100, 150, 20, cData->frog[0].score, RED, FONT_COMIC_SANS_MS);
+	DrawString(hdc, hWnd, -100, 150, 20, cData->g.frogs[0].username, RED, FONT_COMIC_SANS_MS);
+	DrawInt(hdc, hWnd, 100, 150, 20, cData->g.frogs[0].score, RED, FONT_COMIC_SANS_MS);
 	DrawFrog(hdc, hWnd, 0, 200, cData->currentBitmap, 1);
-	DrawString(hdc, hWnd, -100, 200, 20, cData->frog[1].username, RED, FONT_COMIC_SANS_MS);
-	DrawInt(hdc, hWnd, 100, 200, 20, cData->frog[1].score, RED, FONT_COMIC_SANS_MS);
+	DrawString(hdc, hWnd, -100, 200, 20, cData->g.frogs[1].username, RED, FONT_COMIC_SANS_MS);
+	DrawInt(hdc, hWnd, 100, 200, 20, cData->g.frogs[1].score, RED, FONT_COMIC_SANS_MS);
 	DrawButton(hdc, hWnd, 175, 50, 50, 100, 10, TEXT("BITMAP"), IDC_BITMAP_BUTTON, FONT_ARIAL);
 	DrawString(hdc, hWnd, 0, 250, 20, TEXT("FROGGER"), RED, FONT_COMIC_SANS_MS);
 	//hoverfrog1
@@ -403,11 +408,11 @@ void PaintScreenCompetitiveGameover(HDC hdc, HWND hWnd, ClientData* cData) {
 	DrawString(hdc, hWnd, 0, -200, 50, TEXT("GAMEOVER"), RED, FONT_ARIAL);
 	DrawWinnerString(hdc, hWnd, 0, -100, 20, cData, 1, GOLD, FONT_COMIC_SANS_MS);
 	DrawFrog(hdc, hWnd, 0, 0, cData->currentBitmap, 0);
-	DrawString(hdc, hWnd, -100, 0, 20, cData->frog[0].username, RED, FONT_COMIC_SANS_MS);
-	DrawInt(hdc, hWnd, 100, 0, 20, cData->frog[0].score, RED, FONT_COMIC_SANS_MS);
+	DrawString(hdc, hWnd, -100, 0, 20, cData->g.frogs[0].username, RED, FONT_COMIC_SANS_MS);
+	DrawInt(hdc, hWnd, 100, 0, 20, cData->g.frogs[0].score, RED, FONT_COMIC_SANS_MS);
 	DrawFrog(hdc, hWnd, 0, 50, cData->currentBitmap, 1);
-	DrawString(hdc, hWnd, -100, 50, 20, cData->frog[1].username, RED, FONT_COMIC_SANS_MS);
-	DrawInt(hdc, hWnd, 100, 50, 20, cData->frog[1].score, RED, FONT_COMIC_SANS_MS);
+	DrawString(hdc, hWnd, -100, 50, 20, cData->g.frogs[1].username, RED, FONT_COMIC_SANS_MS);
+	DrawInt(hdc, hWnd, 100, 50, 20, cData->g.frogs[1].score, RED, FONT_COMIC_SANS_MS);
 	DrawButton(hdc, hWnd, -100, 100, 50, 200, 20, TEXT("MENU"), IDC_MENU_BUTTON, FONT_ARIAL);
 	DrawString(hdc, hWnd, 0, 250, 20, TEXT("FROGGER"), RED, FONT_COMIC_SANS_MS);
 }

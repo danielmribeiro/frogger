@@ -82,6 +82,7 @@ void handleCommands(ServerData* data) {
 		}
 		else if (_tcsicmp(COMMAND_QUIT, cmd) == 0) {
 			data->status = SHUTDOWN;
+			data->g.exit = 1;
 			SetEvent(data->hEventServerShutdown);
 			break;
 		}
@@ -116,8 +117,17 @@ void setGameData(ServerData* s, int level, int speed, int lanes) {
 	g->speed = speed;
 	s->status = GAME_RUNNING;
 	g->isCarsRunning = true;
+	g->time = 60;
 
-	// Init cars
+	for (int i = 0; i < MAX_LANES; i++)
+		g->numObs[i] = 0;
+
+	for (int i = 0; i < MAX_PLAYERS; i++) {
+		_tcscpy_s(g->frogs->username, sizeof(g->frogs->username), "Player");
+		g->frogs[i].pos.x = 4;
+		g->frogs[i].pos.y = MAX_LANES - 1;
+	}
+
 	for (int i = 0; i < g->lanes; i++) {
 		g->numCars[i] = 1; // TODO difficulty change here
 		dir = getRandomValue(1);
@@ -448,10 +458,6 @@ DWORD WINAPI handleClientsComms(LPVOID p) {
 			CloseHandle(pipeConnections[i]);
 		}
 	}
-
-	return 0;
-
-
 
 	return 0;
 }

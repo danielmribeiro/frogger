@@ -128,6 +128,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\src\Base.h" />
+    <ClInclude Include="..\src\Constants.h" />
     <ClInclude Include="Client.h" />
     <ClInclude Include="ClientComms.h" />
     <ClInclude Include="framework.h" />

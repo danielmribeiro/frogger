@@ -1,19 +1,13 @@
 #ifndef _CLIENT_H_
 #define _CLIENT_H_
 
-#include <windows.h>
-#include <tchar.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <tchar.h>
+#include "../src/Base.h"
+#include "../src/Constants.h"
 #include "framework.h"
 #include "Resource.h"
 #include "ClientComms.h"
 
-#define MAX_LANES 10
-#define MAX_CARS 8
-#define MAX_OBSTACLES 20
+#define WM_GAME_UPDATE (WM_USER + 1)
 
 typedef enum {
 	WELCOME,
@@ -26,25 +20,11 @@ typedef enum {
 	COMPETITIVE_GAMEOVER
 } ClientScreen;
 
-typedef struct {
-	Position pos;
-} Obstacle;
-
-typedef struct {
-	Position pos;
-	TCHAR* username;
-	int score;
-} Frog;
 
 typedef struct {
 	ClientScreen screen;
-	int nRoads;
-	int level;
 	int currentBitmap;
-	Frog frog[2];
-	Car car[MAX_LANES][MAX_CARS];
-	Obstacle obstacle[MAX_LANES][MAX_OBSTACLES];
-	int time;
+	GameInfo g;
 }ClientData;
 
 #define WHITE RGB(255,255,255)
